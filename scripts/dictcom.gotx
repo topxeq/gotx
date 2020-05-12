@@ -1,0 +1,206 @@
+package main
+
+import(
+	"tk"
+	"lcl"
+)
+
+dictDirG = `e:\dictcomdata`
+
+func getDictionaryComPronunciationLocal(wordA string, noStrongA bool) string {
+	wordT := tk.EncodeStringSimple(wordA)
+
+	pathT := tk.JoinPath(dictDirG, wordT+".txt")
+
+	if tk.IfFileExists(pathT) {
+		pronunT := tk.LoadStringFromFile(pathT)
+
+		if tk.IsErrorString(pronunT) {
+			return pronunT
+		}
+
+		if noStrongA {
+			pronunT = tk.RegReplace(pronunT, `<span\s*class="bold">([^<]*?)</span>`, `'${1}`)
+		}
+
+		return tk.Trim(pronunT)
+	}
+
+	return tk.GenerateErrorStringF("not found for %v", wordT)
+}
+
+func getDictionaryComPronunciation(wordA string, noStrong bool) string {
+	rs := getDictionaryComPronunciationLocal(wordA, noStrong)
+
+	if !tk.IsErrorString(rs) {
+		pl("hit for %v", wordA)
+		return rs
+	}
+
+	rs = tk.DownloadPageUTF8("https://www.dictionary.com/browse/"+tk.UrlEncode2(wordA), nil, "", 15)
+	if tk.IsErrorString(rs) {
+		return rs
+	}
+
+	pronunT := tk.RegFindFirst(rs, `<div\s*class="pron-spell-container[^>]*>\s*<span\s*class="pron-spell-content[^>]*>(.*?)</span><button`, 1)
+
+	if tk.IsErrorString(pronunT) {
+		return pronunT
+	}
+
+	pronunT = tk.RegReplace(pronunT, `<span\s*class="italic">([^<]*?)</span>`, `${1}`)
+
+	if noStrong {
+		pronunT = tk.RegReplace(pronunT, `<span\s*class="bold">([^<]*?)</span>`, `'${1}`)
+	} else {
+		pronunT = tk.RegReplace(pronunT, `<span\s*class="bold">([^<]*?)</span>`, `'<strong>${1}</strong>`)
+	}
+
+	pronunT = tk.RegReplace(pronunT, `<span\s*class="[^"]*">([^<]*?)</span>`, `${1}`)
+
+	pronunT = tk.RegReplace(pronunT, `\[\s*(\S.*?\S)\s*\]`, `[${1}]`)
+
+	wordT := tk.EncodeStringSimple(wordA)
+
+	pathT := tk.JoinPath(dictDirG, wordT+".txt")
+
+	rs = tk.SaveStringToFile(pronunT, pathT)
+
+	pl("save local for %v, result: %v", wordT, rs)
+
+	return pronunT
+}
+
+func onClick1(objA) {
+	textT := memo1.Text()
+
+	textT = tk.RemoveBOM(textT)
+
+	if tk.IsErrorString(textT) {
+		pl("failed to get clipboard text")
+		return
+	}
+
+	listT := tk.SplitLines(textT)
+
+	wordT := ""
+
+	for i, v := range listT {
+		if tk.Contains(v, "[") {
+			if tk.Contains(v, `][`) {
+				pl("already processed for line %v", i)
+
+				continue
+			}
+
+			wordT = tk.RegFindFirst(v, `原型：\s*(\S+?)\s+[^\[]*\[`, 1)
+
+			if tk.IsErrorString(wordT) {
+				wordT = tk.RegFindFirst(v, `】\s*(\S+?)\s+`, 1)
+
+				if tk.IsErrorString(wordT) {
+					continue
+				}
+
+				pronunT = getDictionaryComPronunciation(wordT, true)
+				pl("found [%v] %v -> %v", i, wordT, pronunT)
+
+				if tk.IsErrorString(pronunT) {
+					tk.Pl("skipping...")
+					continue
+				}
+
+				listT[i] = tk.RegReplace(v, `】(\s*)(\S+?)(\s+)([^\[]*)\[`, `】${1}${2}${3}${4}`+pronunT+`[`)
+
+				continue
+			}
+
+			pronunT := getDictionaryComPronunciation(wordT, true)
+			pl("found [%v] %v -> %v", i, wordT, pronunT)
+
+			if tk.IsErrorString(pronunT) {
+				pl("skipping...")
+				continue
+			}
+
+			listT[i] = tk.RegReplace(v, `(原型：\s*)(\S+?)(\s+)([^\[]*)\[`, `${1}${2}${3}${4}`+pronunT+`[`)
+
+			// break
+		}
+	}
+
+	rs = tk.JoinLinesBySeparator(listT, "\r\n")
+
+
+	memo1.SetText(rs)
+
+	pl("done")
+}
+
+func onClick2(sender) {
+	application.Terminate()
+}
+
+func main() {
+	errT := lcl.InitLCL()
+
+	if errT != nil {
+		plerr(errT)
+		exit()
+	}
+	
+	application = lcl.GetApplication()
+	
+	application.Initialize()
+	
+	application.SetTitle("Append Dictcom Pronun")
+	application.SetMainFormOnTaskBar(true)
+	
+	mainForm = application.CreateForm()
+	
+	mainForm.SetWidth(800)
+	mainForm.SetHeight(600)
+	mainForm.SetCaption("Append Dictcom Pronun")
+	mainForm.SetPosition(lcl.PoScreenCenter)
+	
+	mainForm.Font().SetSize(11)
+	
+	label1 = lcl.NewLabel(mainForm)
+	label1.SetParent(mainForm)
+	label1.SetLeft(10)
+	label1.SetTop(10)
+	label1.Font().SetName("Arial")
+	label1.Font().SetSize(18)
+	
+	label1.SetCaption("Paste text below")
+	
+	memo1 = lcl.NewMemo(mainForm)
+	memo1.SetParent(mainForm)
+	memo1.SetBounds(10, 48, 600, 400)
+	memo1.Font().SetSize(11)
+	memo1.SetAnchors(lcl.NewSet(lcl.AkTop, lcl.AkBottom, lcl.AkLeft, lcl.AkRight))
+	memo1.SetScrollBars(lcl.SsAutoVertical)
+	memo1.SetWordWrap(true)
+	
+	
+}
+button1 = lcl.NewButton(mainForm)
+button1.SetParent(mainForm)
+button1.SetLeft(20)
+button1.SetTop(460)
+button1.SetCaption("Go")
+button1.SetOnClick(lcl.NewTNotifyEvent(onClick1))
+button1.SetAnchors(lcl.NewSet(lcl.AkBottom, lcl.AkLeft))
+
+button2 = lcl.NewButton(mainForm)
+button2.SetParent(mainForm)
+button2.SetLeft(110)
+button2.SetTop(460)
+button2.SetCaption("Close")
+button2.SetOnClick(lcl.NewTNotifyEvent(onClick2))
+button2.SetAnchors(lcl.NewSet(lcl.AkBottom, lcl.AkLeft))
+
+application.Run()
+
+
+

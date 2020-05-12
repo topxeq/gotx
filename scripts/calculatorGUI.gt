@@ -1,0 +1,55 @@
+package main
+
+import (
+	. "builtin"
+	"github.com/AllenDang/giu"
+	"os"
+)
+
+var text1 string
+
+func onButton1Click() {
+	println(1)
+
+	// evaluate the expression in the text input
+	t := text1
+	println(2)
+
+	rs := Eval(t)
+
+	println(rs)
+
+	// set the result back into the text input
+	text1 = rs //string(rs)
+}
+
+// close the window, also terminate the application
+func onButton2Click() {
+	os.Exit(1)
+}
+
+// main window loop
+func loop() {
+
+	// set the layout of GUI
+	layoutT := []giu.Widget{
+		giu.Label("Enter an expression."),
+		giu.InputText("", 0, &text1),
+
+		// widgets in line layout is aligned left to right
+		giu.Line(giu.Button("Calculate", onButton1Click),
+			giu.Button("Close", onButton2Click)),
+	}
+
+	giu.SingleWindow("Calculator", layoutT)
+}
+
+func main() {
+	// text1 used to hold the string value of the text input
+	// notice: text1 is a pointer
+	// setup the title, size (width and height, 400*200), style and font-loading function of main window,
+	mainWindow := giu.NewMasterWindow("Calculator", 400, 200, giu.MasterWindowFlagsNotResizable, nil)
+
+	// show the window and start the message loop
+	giu.LoopWindow(mainWindow, loop)
+}

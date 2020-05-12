@@ -1,0 +1,12 @@
+package main
+
+import (
+	"github.com/topxeq/tk"
+)
+
+func main() {
+	var a = "123"
+
+	tk.Pl("a = %#v", a)
+
+}
