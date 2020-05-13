@@ -1,11 +1,13 @@
 package main
 
-import(
+import (
+	. "builtin"
+	"giu"
+	"os"
 	"tk"
-	"lcl"
 )
 
-dictDirG = `e:\dictcomdata`
+var dictDirG = `e:\dictcomdata`
 
 func getDictionaryComPronunciationLocal(wordA string, noStrongA bool) string {
 	wordT := tk.EncodeStringSimple(wordA)
@@ -71,8 +73,10 @@ func getDictionaryComPronunciation(wordA string, noStrong bool) string {
 	return pronunT
 }
 
-func onClick1(objA) {
-	textT := memo1.Text()
+var text1 string
+
+func onClick1() {
+	textT := text1
 
 	textT = tk.RemoveBOM(textT)
 
@@ -102,7 +106,7 @@ func onClick1(objA) {
 					continue
 				}
 
-				pronunT = getDictionaryComPronunciation(wordT, true)
+				pronunT := getDictionaryComPronunciation(wordT, true)
 				pl("found [%v] %v -> %v", i, wordT, pronunT)
 
 				if tk.IsErrorString(pronunT) {
@@ -129,78 +133,43 @@ func onClick1(objA) {
 		}
 	}
 
-	rs = tk.JoinLinesBySeparator(listT, "\r\n")
+	rs := tk.JoinLinesBySeparator(listT, "\r\n")
 
-
-	memo1.SetText(rs)
+	text1 = rs
 
 	pl("done")
 }
 
-func onClick2(sender) {
-	application.Terminate()
+func onClick2() {
+	os.Exit(1)
+}
+
+func onEditChange() {
+
+}
+
+func loop() {
+
+	// set the layout of GUI
+	layoutT := []giu.Widget{
+		giu.Label("Enter the text below."),
+		giu.InputTextMultiline("InputTextMultiline001", &text1, -1, -30, 0, nil, onEditChange),
+
+		// widgets in line layout is aligned left to right
+		giu.Line(giu.Button("Go", onClick1),
+			giu.Button("Close", onClick2)),
+	}
+
+	giu.SingleWindow("Dictcom", layoutT)
 }
 
 func main() {
-	errT := lcl.InitLCL()
+	setVar("FontRange", "FULL")
+	setVar("FontSize", "15")
 
-	if errT != nil {
-		plerr(errT)
-		exit()
-	}
-	
-	application = lcl.GetApplication()
-	
-	application.Initialize()
-	
-	application.SetTitle("Append Dictcom Pronun")
-	application.SetMainFormOnTaskBar(true)
-	
-	mainForm = application.CreateForm()
-	
-	mainForm.SetWidth(800)
-	mainForm.SetHeight(600)
-	mainForm.SetCaption("Append Dictcom Pronun")
-	mainForm.SetPosition(lcl.PoScreenCenter)
-	
-	mainForm.Font().SetSize(11)
-	
-	label1 = lcl.NewLabel(mainForm)
-	label1.SetParent(mainForm)
-	label1.SetLeft(10)
-	label1.SetTop(10)
-	label1.Font().SetName("Arial")
-	label1.Font().SetSize(18)
-	
-	label1.SetCaption("Paste text below")
-	
-	memo1 = lcl.NewMemo(mainForm)
-	memo1.SetParent(mainForm)
-	memo1.SetBounds(10, 48, 600, 400)
-	memo1.Font().SetSize(11)
-	memo1.SetAnchors(lcl.NewSet(lcl.AkTop, lcl.AkBottom, lcl.AkLeft, lcl.AkRight))
-	memo1.SetScrollBars(lcl.SsAutoVertical)
-	memo1.SetWordWrap(true)
-	
-	
+	mainWindow := giu.NewMasterWindow("Dictcom", 800, 600, 0, giu.LoadFont)
+	//giu.MasterWindowFlagsNotResizable
+
+	giu.LoopWindow(mainWindow, loop)
+
 }
-button1 = lcl.NewButton(mainForm)
-button1.SetParent(mainForm)
-button1.SetLeft(20)
-button1.SetTop(460)
-button1.SetCaption("Go")
-button1.SetOnClick(lcl.NewTNotifyEvent(onClick1))
-button1.SetAnchors(lcl.NewSet(lcl.AkBottom, lcl.AkLeft))
-
-button2 = lcl.NewButton(mainForm)
-button2.SetParent(mainForm)
-button2.SetLeft(110)
-button2.SetTop(460)
-button2.SetCaption("Close")
-button2.SetOnClick(lcl.NewTNotifyEvent(onClick2))
-button2.SetAnchors(lcl.NewSet(lcl.AkBottom, lcl.AkLeft))
-
-application.Run()
-
-
-

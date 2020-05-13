@@ -16,7 +16,7 @@ import (
 
 	"errors"
 	"fmt"
-	"runtime"
+	// "runtime"
 
 	"net"
 	"strconv"
@@ -31,7 +31,7 @@ import (
 
 	_ "github.com/denisenkom/go-mssqldb"
 	// "github.com/badgraph-io/badger"
-	_ "github.com/godror/godror"
+	// _ "github.com/godror/godror"
 
 	"image"
 	"image/color"
@@ -63,11 +63,6 @@ import (
 	"github.com/AllenDang/giu"
 	// g "github.com/AllenDang/giu"
 	"github.com/AllenDang/giu/imgui"
-
-	"github.com/topxeq/govcl/vcl"
-	"github.com/topxeq/govcl/vcl/api"
-	"github.com/topxeq/govcl/vcl/rtl"
-	// "github.com/topxeq/govcl/vcl/types"
 	// GUI related end
 )
 
@@ -341,7 +336,7 @@ func runScript(codeA string, modeA string, argsA ...string) interface{} {
 		// return retG
 		return nil
 	} else {
-		return systemCmd("gox", append([]string{codeA}, argsA...)...)
+		return systemCmd("gotx", append([]string{codeA}, argsA...)...)
 	}
 
 }
@@ -487,10 +482,10 @@ func bitXor(p interface{}, v interface{}) interface{} {
 }
 
 func showHelp() {
-	tk.Pl("Gox by TopXeQ V%v\n", versionG)
+	tk.Pl("Gotx by TopXeQ V%v\n", versionG)
 
-	tk.Pl("Usage: gox [-v|-h] test.gox next.js, ...\n")
-	tk.Pl("or just gox without arguments to start REPL instead.\n")
+	tk.Pl("Usage: gotx [-v|-h] test.gt\n")
+	tk.Pl("or just gotx without arguments to start REPL instead.\n")
 
 }
 
@@ -605,134 +600,6 @@ func loadFont() {
 }
 
 // full version related end
-
-func initLCLLib() (result error) {
-
-	api.DoLibInit()
-
-	result = nil
-
-	return result
-}
-
-func syncInitLCL() error {
-	var errT error
-
-	vcl.ThreadSync(func() {
-		initLCL()
-	})
-
-	return errT
-}
-
-func initLCL() error {
-
-	runtime.LockOSThread()
-
-	// startThreadID := tk.GetCurrentThreadID()
-
-	api.CloseLib()
-
-	errT := initLCLLib()
-
-	if errT != nil {
-		tk.Pl("failed to init lib: %v, try to download the LCL lib...", errT)
-
-		applicationPathT := tk.GetApplicationPath()
-
-		osT := tk.GetOSName()
-
-		if tk.Contains(osT, "inux") {
-			rs := tk.DownloadFile("http://scripts.frenchfriend.net/pub/liblcl.so", applicationPathT, "liblcl.so", false)
-
-			if tk.IsErrorString(rs) {
-				tk.Pl("failed to download LCL file.")
-				return tk.Errf("failed to download LCL file.")
-			}
-		} else if tk.Contains(osT, "arwin") {
-			rs := tk.DownloadFile("http://scripts.frenchfriend.net/pub/liblcl.dylib", applicationPathT, "liblcl.dylib", false)
-
-			if tk.IsErrorString(rs) {
-				tk.Pl("failed to download LCL file.")
-				return tk.Errf("failed to download LCL file.")
-			}
-		} else {
-			rs := tk.DownloadFile("http://scripts.frenchfriend.net/pub/liblcl.dll", applicationPathT, "liblcl.dll", false)
-
-			if tk.IsErrorString(rs) {
-				tk.Pl("failed to download LCL file.")
-				return tk.Errf("failed to download LCL file.")
-			}
-		}
-
-		errT = initLCLLib()
-
-		if errT != nil {
-			tk.Pl("failed to install lib: %v", errT)
-			return tk.Errf("failed to install lib: %v", errT)
-		}
-	}
-
-	api.DoResInit()
-
-	api.DoImportInit()
-
-	api.DoDefInit()
-
-	rtl.DoRtlInit()
-
-	vcl.DoInit()
-
-	// if verboseG {
-
-	// 	endThreadID := tk.GetCurrentThreadID()
-
-	// 	tk.Pl("start tid: %v, end tid: %v", startThreadID, endThreadID)
-
-	// 	if endThreadID != startThreadID {
-	// 		return tk.Errf("failed to init lcl lib: %v", "thread not same")
-	// 	}
-	// }
-
-	return nil
-}
-
-func getVclApplication() *vcl.TApplication {
-	return vcl.Application
-}
-
-// func newLclAnchors() *types.TAnchors {
-// 	a := types.TAnchors(rtl.Include(0, types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
-
-// }
-
-// func getLCLEvent(funcA *execq.Function) *() {
-
-// }
-
-// func getTNotifyEvent(funcA *execq.Function) *vcl.TNotifyEvent {
-// 	var f vcl.TNotifyEvent = func(sender vcl.IObject) {
-// 		funcA.Call(execq.NewStack(), sender)
-// 	}
-
-// 	return &f
-// }
-
-// func NewTNotifyEvent(funcA *execq.Function) *vcl.TNotifyEvent {
-// 	var f vcl.TNotifyEvent = func(sender vcl.IObject) {
-// 		funcA.Call(execq.NewStack(), sender)
-// 	}
-
-// 	return &f
-// }
-
-// func NewTKeyEvent(funcA *execq.Function) *vcl.TKeyEvent {
-// 	var f vcl.TKeyEvent = func(sender vcl.IObject, key *types.Char, shift types.TShiftState) {
-// 		funcA.Call(execq.NewStack(), sender, key, shift)
-// 	}
-
-// 	return &f
-// }
 
 // full version related start
 
@@ -955,14 +822,14 @@ func onButtonCloseClick() {
 }
 
 func loopWindow(windowA *giu.MasterWindow, loopA func()) {
-	// wnd := giu.NewMasterWindow("Gox Editor", 800, 600, 0, loadFont)
+	// wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
 
 	windowA.Main(loopA)
 
 }
 
 func editorLoop() {
-	giu.SingleWindow("Gox Editor", giu.Layout{
+	giu.SingleWindow("Gotx Editor", giu.Layout{
 		giu.Label(editFileNameG + editFileCleanFlagG),
 		giu.Dummy(30, 0),
 		giu.Line(
@@ -1102,7 +969,7 @@ func editFile(fileNameA string) {
 	setVar("FontRange", "COMMON")
 	setVar("FontSize", "15")
 
-	wnd := giu.NewMasterWindow("Gox Editor", 800, 600, 0, loadFont)
+	wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
 	// tk.Pl("%T", wnd)
 	wnd.Main(editorLoop)
 
@@ -1159,7 +1026,30 @@ func initYGVM() {
 		ygVMG.Use(stdlib.Symbols)
 
 		GotxSymbols["builtin"] = map[string]reflect.Value{
-			"Eval": reflect.ValueOf(ygEval),
+			"eval":             reflect.ValueOf(ygEval),
+			"printfln":         reflect.ValueOf(tk.Pl),
+			"fprintf":          reflect.ValueOf(fmt.Fprintf),
+			"pl":               reflect.ValueOf(tk.Pl),
+			"pln":              reflect.ValueOf(fmt.Println),
+			"plv":              reflect.ValueOf(tk.Plv),
+			"plerr":            reflect.ValueOf(tk.PlErr),
+			"exit":             reflect.ValueOf(exit),
+			"setValue":         reflect.ValueOf(setValue),
+			"getValue":         reflect.ValueOf(getValue),
+			"bitXor":           reflect.ValueOf(bitXor),
+			"setVar":           reflect.ValueOf(setVar),
+			"getVar":           reflect.ValueOf(getVar),
+			"checkError":       reflect.ValueOf(checkError),
+			"checkErrorString": reflect.ValueOf(checkErrorString),
+			"getInput":         reflect.ValueOf(tk.GetUserInput),
+			"getInputf":        reflect.ValueOf(tk.GetInputf),
+			"newSSHClient":     reflect.ValueOf(newSSHClient),
+			"run":              reflect.ValueOf(runFile),
+			"typeOf":           reflect.ValueOf(typeOfValueReflect),
+			"remove":           reflect.ValueOf(remove),
+			"runScript":        reflect.ValueOf(runScript),
+			"getClipText":      reflect.ValueOf(getClipText),
+			"setClipText":      reflect.ValueOf(setClipText),
 		}
 
 		// GotxSymbols["github.com/AllenDang/giu"] = map[string]reflect.Value{
@@ -1186,7 +1076,7 @@ func main() {
 	argsT := os.Args
 
 	if tk.IfSwitchExistsWhole(argsT, "-version") {
-		tk.Pl("Gox by TopXeQ V%v", versionG)
+		tk.Pl("Gotx by TopXeQ V%v", versionG)
 		return
 	}
 
@@ -1217,7 +1107,7 @@ func main() {
 
 	if lenT < 1 {
 
-		autoPathT := filepath.Join(tk.GetApplicationPath(), "auto.gox")
+		autoPathT := filepath.Join(tk.GetApplicationPath(), "auto.gt")
 
 		if tk.IfFileExists(autoPathT) {
 			scriptsT = []string{autoPathT}
@@ -1313,23 +1203,23 @@ func main() {
 		var fcT string
 
 		if ifExampleT {
-			if (!tk.EndsWith(scriptT, ".gox")) && (!tk.EndsWith(scriptT, ".js")) && (!tk.EndsWith(scriptT, ".tg")) && (!tk.EndsWith(scriptT, ".ank")) && (!tk.EndsWith(scriptT, ".ql")) {
-				scriptT += ".gox"
+			if !tk.EndsWith(scriptT, ".gt") {
+				scriptT += ".gt"
 			}
-			fcT = tk.DownloadPageUTF8("https://gitee.com/topxeq/gox/raw/master/scripts/"+scriptT, nil, "", 30)
+			fcT = tk.DownloadPageUTF8("https://gitee.com/topxeq/gotx/raw/master/scripts/"+scriptT, nil, "", 30)
 		} else if ifRemoteT {
 			fcT = tk.DownloadPageUTF8(scriptT, nil, "", 30)
 		} else if ifCloudT {
-			if (!tk.EndsWith(scriptT, ".gox")) && (!tk.EndsWith(scriptT, ".js")) && (!tk.EndsWith(scriptT, ".tg")) && (!tk.EndsWith(scriptT, ".ank")) && (!tk.EndsWith(scriptT, ".ql")) {
-				scriptT += ".gox"
+			if !tk.EndsWith(scriptT, ".gt") {
+				scriptT += ".gt"
 			}
 			fcT = tk.DownloadPageUTF8("http://scripts.frenchfriend.net/xaf/scripts/"+scriptT, nil, "", 30)
 		} else if ifGoPathT {
-			if (!tk.EndsWith(scriptT, ".gox")) && (!tk.EndsWith(scriptT, ".js")) && (!tk.EndsWith(scriptT, ".tg")) && (!tk.EndsWith(scriptT, ".ank")) && (!tk.EndsWith(scriptT, ".ql")) {
-				scriptT += ".gox"
+			if !tk.EndsWith(scriptT, ".gt") {
+				scriptT += ".gt"
 			}
 
-			fcT = tk.LoadStringFromFile(filepath.Join(tk.GetEnv("GOPATH"), "src", "github.com", "topxeq", "gox", "scripts", scriptT))
+			fcT = tk.LoadStringFromFile(filepath.Join(tk.GetEnv("GOPATH"), "src", "github.com", "topxeq", "gotx", "scripts", scriptT))
 		} else {
 			fcT = tk.LoadStringFromFile(scriptT)
 		}

@@ -19,4 +19,7 @@ func init() {
 		"QueryDBS":           reflect.ValueOf(sqltk.QueryDBS),
 		"QueryDBString":      reflect.ValueOf(sqltk.QueryDBString),
 	}
+
+	GotxSymbols["sqltk"] = GotxSymbols["github.com/topxeq/sqltk"]
+
 }

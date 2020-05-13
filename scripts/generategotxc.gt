@@ -1,0 +1,47 @@
+package main
+
+import (
+	. "builtin"
+	"os"
+	"tk"
+)
+
+func main() {
+	gopathT := os.Getenv("GOPATH")
+
+	if gopathT == "" {
+		pl("GOPATH not defined")
+		return
+	}
+
+	sourceFileNameT := tk.JoinPath(gopathT, "/src/github.com/topxeq/gotx/gotx.go")
+
+	fcT := tk.LoadStringFromFile(sourceFileNameT)
+
+	if tk.IsErrorString(fcT) {
+		pl("load source file failed: %v", tk.GetErrorString(fcT))
+		return
+	}
+
+	foundT := tk.RegFindFirst(fcT, `(?m)// GUI related start[\s\S]*?// GUI related end`, 0)
+
+	if tk.IsErrorString(foundT) {
+		pl("GUI part not found, maybe not expected source file: %v", tk.GetErrorString(foundT))
+		return
+	}
+
+	fcNewT := tk.RegReplace(fcT, `(?m)// GUI related start[\s\S]*?// GUI related end`, "")
+
+	tk.EnsureMakeDirs(tk.JoinPath(gopathT, "/src/gotxc"))
+
+	newFilePathT := tk.JoinPath(gopathT, "/src/gotxc/gotxc.go")
+
+	rsT := tk.SaveStringToFile(fcNewT, newFilePathT)
+
+	if tk.IsErrorString(rsT) {
+		pl("failed to save destination file: %v", tk.GetErrorString(rsT))
+		return
+	}
+
+	pl("Done")
+}
