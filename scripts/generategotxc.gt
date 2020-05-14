@@ -3,6 +3,7 @@ package main
 import (
 	. "builtin"
 	"os"
+	"path/filepath"
 	"tk"
 )
 
@@ -32,15 +33,57 @@ func main() {
 
 	fcNewT := tk.RegReplace(fcT, `(?m)// GUI related start[\s\S]*?// GUI related end`, "")
 
-	tk.EnsureMakeDirs(tk.JoinPath(gopathT, "/src/gotxc"))
+	destPathT := tk.JoinPath(gopathT, "/src/gotxc")
+
+	errT := os.RemoveAll(destPathT)
+
+	if errT != nil {
+		tk.Pl("failed to remove path: %v")
+		return
+	}
+
+	tk.Pl("remove path %v: %v", destPathT, errT)
+
+	tk.EnsureMakeDirs(destPathT)
 
 	newFilePathT := tk.JoinPath(gopathT, "/src/gotxc/gotxc.go")
 
 	rsT := tk.SaveStringToFile(fcNewT, newFilePathT)
 
 	if tk.IsErrorString(rsT) {
-		pl("failed to save destination file: %v", tk.GetErrorString(rsT))
+		tk.Pl("failed to save destination file: %v", tk.GetErrorString(rsT))
 		return
+	}
+
+	aryT := tk.GenerateFileListInDir(tk.JoinPath(gopathT, "/src/github.com/topxeq/gotx"), "*.go", true)
+	// pl("%#v", aryT)
+
+	lenT := len(aryT)
+
+	for i, v := range aryT {
+		fileNameT := filepath.Base(v)
+
+		if tk.StartsWith(fileNameT, "gui_") {
+			continue
+		}
+
+		if fileNameT == "gotx.go" {
+			continue
+		}
+
+		srcT := tk.LoadStringFromFile(fileNameT)
+
+		if tk.IsErrorString(srcT) {
+			pl("failed to read source file [%v/%v] %v: %v", i, lenT, fileNameT, tk.GetErrorString(srcT))
+			return
+		}
+
+		rs := tk.SaveStringToFile(srcT, tk.JoinPath(destPathT, fileNameT))
+
+		if tk.IsErrorString(rs) {
+			pl("failed to save source file [%v/%v] %v: %v", i, lenT, fileNameT, tk.GetErrorString(srcT))
+			return
+		}
 	}
 
 	pl("Done")
