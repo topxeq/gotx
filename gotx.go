@@ -550,6 +550,8 @@ func runInteractive() int {
 
 // full version related start
 
+var specialCharsG = "ɪɔː辑ˌɡɜɔŋæʌʃɛəʒɪɑɒθʊː"
+
 func loadFont() {
 	fonts := giu.Context.IO().Fonts()
 
@@ -563,11 +565,15 @@ func loadFont() {
 		builder.AddRanges(fonts.GlyphRangesDefault())
 	} else {
 		rangeStrT := rangeVarT.(string)
-		if rangeStrT == "" || tk.StartsWith(rangeStrT, "COMMON") {
+		if rangeStrT == "" {
 			builder.AddRanges(fonts.GlyphRangesChineseSimplifiedCommon())
-			builder.AddText("辑" + rangeStrT[6:])
+			builder.AddText(specialCharsG)
+		} else if tk.StartsWith(rangeStrT, "COMMON") {
+			builder.AddRanges(fonts.GlyphRangesChineseSimplifiedCommon())
+			builder.AddText(specialCharsG + rangeStrT[6:])
 		} else if rangeStrT == "FULL" {
 			builder.AddRanges(fonts.GlyphRangesChineseFull())
+			builder.AddText(specialCharsG)
 		} else {
 			builder.AddText(rangeStrT)
 		}
@@ -970,6 +976,8 @@ func editFile(fileNameA string) {
 	// setVar("Font", "c:/Windows/Fonts/simsun.ttc")
 	setVar("FontRange", "COMMON")
 	setVar("FontSize", "15")
+
+	setVar("Font", "c:/Windows/Fonts/simhei.ttf")
 
 	wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
 	// tk.Pl("%T", wnd)
