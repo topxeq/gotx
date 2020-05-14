@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/topxeq/tk"
 	"reflect"
+
+	"github.com/topxeq/tk"
 )
 
 func init() {
@@ -108,6 +109,7 @@ func init() {
 		"GenerateErrorStringF":                     reflect.ValueOf(tk.GenerateErrorStringF),
 		"GenerateErrorStringFTX":                   reflect.ValueOf(tk.GenerateErrorStringFTX),
 		"GenerateErrorStringTX":                    reflect.ValueOf(tk.GenerateErrorStringTX),
+		"GenerateFileListInDir":                    reflect.ValueOf(tk.GenerateFileListInDir),
 		"GenerateFileListRecursively":              reflect.ValueOf(tk.GenerateFileListRecursively),
 		"GenerateFileListRecursivelyWithExclusive": reflect.ValueOf(tk.GenerateFileListRecursivelyWithExclusive),
 		"GenerateJSONPResponse":                    reflect.ValueOf(tk.GenerateJSONPResponse),
