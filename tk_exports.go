@@ -338,6 +338,10 @@ func init() {
 		"UrlEncode2":                               reflect.ValueOf(tk.UrlEncode2),
 		"RegStartsWith":                            reflect.ValueOf(tk.RegStartsWith),
 		"RegFindFirstIndex":                        reflect.ValueOf(tk.RegFindFirstIndex),
+		"ReshapeXML":                               reflect.ValueOf(tk.ReshapeXML),
+		"FlattenXML":                               reflect.ValueOf(tk.FlattenXML),
+		"GetMSSFromXML":                            reflect.ValueOf(tk.GetMSSFromXML),
+		"GetMSSArrayFromXML":                       reflect.ValueOf(tk.GetMSSArrayFromXML),
 
 		// type definitions
 		"ExitCallback":  reflect.ValueOf((*tk.ExitCallback)(nil)),
