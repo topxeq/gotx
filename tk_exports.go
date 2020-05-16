@@ -1,9 +1,8 @@
 package main
 
 import (
-	"reflect"
-
 	"github.com/topxeq/tk"
+	"reflect"
 )
 
 func init() {
@@ -39,6 +38,7 @@ func init() {
 		"ConvertToGB18030":                         reflect.ValueOf(tk.ConvertToGB18030),
 		"ConvertToGB18030Bytes":                    reflect.ValueOf(tk.ConvertToGB18030Bytes),
 		"ConvertToUTF8":                            reflect.ValueOf(tk.ConvertToUTF8),
+		"CopyFile":                                 reflect.ValueOf(tk.CopyFile),
 		"CreateSimpleEvent":                        reflect.ValueOf(tk.CreateSimpleEvent),
 		"CreateString":                             reflect.ValueOf(tk.CreateString),
 		"CreateStringEmpty":                        reflect.ValueOf(tk.CreateStringEmpty),
@@ -49,6 +49,7 @@ func init() {
 		"CreateStringSuccess":                      reflect.ValueOf(tk.CreateStringSuccess),
 		"CreateStringWithObject":                   reflect.ValueOf(tk.CreateStringWithObject),
 		"CreateTXCollection":                       reflect.ValueOf(tk.CreateTXCollection),
+		"CreateTempFile":                           reflect.ValueOf(tk.CreateTempFile),
 		"DebugModeG":                               reflect.ValueOf(&tk.DebugModeG).Elem(),
 		"DecodeStringCustom":                       reflect.ValueOf(tk.DecodeStringCustom),
 		"DecodeStringSimple":                       reflect.ValueOf(tk.DecodeStringSimple),
@@ -90,9 +91,13 @@ func init() {
 		"EncryptStringByTXTE":                      reflect.ValueOf(tk.EncryptStringByTXTE),
 		"EndsWith":                                 reflect.ValueOf(tk.EndsWith),
 		"EndsWithIgnoreCase":                       reflect.ValueOf(tk.EndsWithIgnoreCase),
+		"EnsureBasePath":                           reflect.ValueOf(tk.EnsureBasePath),
 		"EnsureMakeDirs":                           reflect.ValueOf(tk.EnsureMakeDirs),
 		"EnsureMakeDirsE":                          reflect.ValueOf(tk.EnsureMakeDirsE),
 		"EnsureValidFileNameX":                     reflect.ValueOf(tk.EnsureValidFileNameX),
+		"ErrStrF":                                  reflect.ValueOf(tk.ErrStrF),
+		"ErrToStr":                                 reflect.ValueOf(tk.ErrToStr),
+		"ErrToStrF":                                reflect.ValueOf(tk.ErrToStrF),
 		"Errf":                                     reflect.ValueOf(tk.Errf),
 		"ErrorStringToError":                       reflect.ValueOf(tk.ErrorStringToError),
 		"ErrorToString":                            reflect.ValueOf(tk.ErrorToString),
@@ -279,6 +284,7 @@ func init() {
 		"ReadLineFromBufioReader":                  reflect.ValueOf(tk.ReadLineFromBufioReader),
 		"RegContains":                              reflect.ValueOf(tk.RegContains),
 		"RegFindAll":                               reflect.ValueOf(tk.RegFindAll),
+		"RegFindAllGroups":                         reflect.ValueOf(tk.RegFindAllGroups),
 		"RegFindFirst":                             reflect.ValueOf(tk.RegFindFirst),
 		"RegFindFirstIndex":                        reflect.ValueOf(tk.RegFindFirstIndex),
 		"RegFindFirstTX":                           reflect.ValueOf(tk.RegFindFirstTX),
@@ -287,6 +293,7 @@ func init() {
 		"RegStartsWith":                            reflect.ValueOf(tk.RegStartsWith),
 		"RemoveBOM":                                reflect.ValueOf(tk.RemoveBOM),
 		"RemoveDuplicateInDualLineList":            reflect.ValueOf(tk.RemoveDuplicateInDualLineList),
+		"RemoveFile":                               reflect.ValueOf(tk.RemoveFile),
 		"RemoveFileExt":                            reflect.ValueOf(tk.RemoveFileExt),
 		"RemoveGlobalEnv":                          reflect.ValueOf(tk.RemoveGlobalEnv),
 		"RemoveItemsInArray":                       reflect.ValueOf(tk.RemoveItemsInArray),
@@ -339,6 +346,7 @@ func init() {
 		"StrToTimeCompactNoError":                  reflect.ValueOf(tk.StrToTimeCompactNoError),
 		"StringReplace":                            reflect.ValueOf(tk.StringReplace),
 		"SumBytes":                                 reflect.ValueOf(tk.SumBytes),
+		"SystemCmd":                                reflect.ValueOf(tk.SystemCmd),
 		"TXDEF_BUFFER_LEN":                         reflect.ValueOf(tk.TXDEF_BUFFER_LEN),
 		"TXResultFromString":                       reflect.ValueOf(tk.TXResultFromString),
 		"TimeFormat":                               reflect.ValueOf(&tk.TimeFormat).Elem(),
