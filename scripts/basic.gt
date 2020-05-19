@@ -1,0 +1,12 @@
+package main
+
+import (
+	"math/rand"
+	"tk"
+)
+
+func main() {
+	tk.Pl("1.2 * 3.8 = %v", 1.2*3.8)
+
+	printfln("random number: %v", rand.Int())
+}

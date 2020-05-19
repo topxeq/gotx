@@ -10,22 +10,12 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"sync"
 	"time"
 
-	"errors"
 	"fmt"
 
 	// "runtime"
-
-	"net"
-	"strconv"
-
-	"github.com/melbahja/goph"
-	"golang.org/x/crypto/ssh"
-
-	"github.com/atotto/clipboard"
 
 	"github.com/containous/yaegi/interp"
 	"github.com/containous/yaegi/stdlib"
@@ -70,7 +60,7 @@ import (
 
 // Non GUI related
 
-var versionG = "0.985a"
+var versionG = "0.988a"
 
 var verboseG = false
 
@@ -79,35 +69,6 @@ var variableG = make(map[string]interface{})
 var ygVMG *interp.Interpreter = nil
 
 var varMutexG sync.Mutex
-
-func exit() {
-	defer func() {
-		if r := recover(); r != nil {
-			tk.Printfln("发生异常，错误信息：%v", r)
-
-			return
-		}
-	}()
-
-	os.Exit(1)
-}
-
-func getVar(nameA string) interface{} {
-	varMutexG.Lock()
-	rs, ok := variableG[nameA]
-	varMutexG.Unlock()
-
-	if !ok {
-		tk.GenerateErrorString("no key")
-	}
-	return rs
-}
-
-func setVar(nameA string, valueA interface{}) {
-	varMutexG.Lock()
-	variableG[nameA] = valueA
-	varMutexG.Unlock()
-}
 
 func ygEval(strA string) string {
 	// if ygVMG == nil {
@@ -124,188 +85,8 @@ func ygEval(strA string) string {
 	return tk.Spr("%v", result)
 }
 
-func getClipText() string {
-	textT, errT := clipboard.ReadAll()
-	if errT != nil {
-		return tk.GenerateErrorStringF("could not get text from clipboard: %v", errT.Error())
-	}
-
-	return textT
-}
-
-func setClipText(textA string) {
-	clipboard.WriteAll(textA)
-}
-
 func panicIt(valueA interface{}) {
 	panic(valueA)
-}
-
-func checkErrorFunc(errA error, funcA func()) {
-	if errA != nil {
-		tk.PlErr(errA)
-
-		if funcA != nil {
-			funcA()
-		}
-
-		os.Exit(1)
-	}
-
-}
-
-func checkError(errA error, funcsA ...(func())) {
-	if errA != nil {
-		tk.PlErr(errA)
-
-		if funcsA != nil {
-			for _, v := range funcsA {
-				v()
-			}
-		}
-
-		os.Exit(1)
-	}
-
-}
-
-func checkErrorString(strA string, funcA func()) {
-	if tk.IsErrorString(strA) {
-		tk.PlErrString(strA)
-
-		if funcA != nil {
-			funcA()
-		}
-
-		os.Exit(1)
-	}
-
-}
-
-func newSSHClient(hostA string, portA int, userA string, passA string) (*goph.Client, error) {
-	authT := goph.Password(passA)
-
-	clientT := &goph.Client{
-		Addr: hostA,
-		Port: portA,
-		User: userA,
-		Auth: authT,
-	}
-
-	errT := goph.Conn(clientT, &ssh.ClientConfig{
-		User:    clientT.User,
-		Auth:    clientT.Auth,
-		Timeout: 20 * time.Second,
-		HostKeyCallback: func(host string, remote net.Addr, key ssh.PublicKey) error {
-			return nil
-			// hostFound, err := goph.CheckKnownHost(host, remote, key, "")
-
-			// if hostFound && err != nil {
-			// 	return err
-			// }
-
-			// if hostFound && err == nil {
-			// 	return nil
-			// }
-
-			// return goph.AddKnownHost(host, remote, key, "")
-		},
-	})
-
-	// clientT, errT := goph.NewConn(userA, hostA, authT, func(host string, remote net.Addr, key ssh.PublicKey) error {
-
-	// 	hostFound, err := goph.CheckKnownHost(host, remote, key, "")
-
-	// 	if hostFound && err != nil {
-	// 		return err
-	// 	}
-
-	// 	if hostFound && err == nil {
-	// 		return nil
-	// 	}
-
-	// 	return goph.AddKnownHost(host, remote, key, "")
-	// })
-
-	return clientT, errT
-}
-
-func remove(aryA []interface{}, startA int, endA int) []interface{} {
-	if startA < 0 || startA >= len(aryA) {
-		tk.Pl("Runtime error: %v", "index out of range")
-		exit()
-	}
-
-	if endA < 0 || endA >= len(aryA) {
-		tk.Pl("Runtime error: %v", "index out of range")
-		exit()
-	}
-
-	return append(aryA[:startA], aryA[endA+1:]...)
-	// if idxT == 0 {
-	// 	return ayrA[idxT + 1:]
-	// }
-
-	// if idxT == len(aryA) - 1 {
-	// 	return ayrA[0:len(aryA) - 1]
-	// }
-
-	// return append(aryA[:idxA], aryA[idxA+1:]...)
-
-}
-
-func toStringFromRuneSlice(sliceA []rune) string {
-	return string(sliceA)
-}
-
-// toInt converts all reflect.Value-s into int.
-func toInt(vA interface{}) int {
-	v := reflect.ValueOf(&vA)
-	i, _ := tryToInt(v)
-	return i
-}
-
-// tryToInt attempts to convert a value to an int.
-// If it cannot (in the case of a non-numeric string, a struct, etc.)
-// it returns 0 and an error.
-func tryToInt(v reflect.Value) (int, error) {
-	if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
-		v = v.Elem()
-	}
-	switch v.Kind() {
-	case reflect.Float64, reflect.Float32:
-		return int(v.Float()), nil
-	case reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int:
-		return int(v.Int()), nil
-	case reflect.Bool:
-		if v.Bool() {
-			return 1, nil
-		}
-		return 0, nil
-	case reflect.String:
-		s := v.String()
-		var i int64
-		var err error
-		if strings.HasPrefix(s, "0x") {
-			i, err = strconv.ParseInt(s, 16, 64)
-		} else {
-			i, err = strconv.ParseInt(s, 10, 64)
-		}
-		if err == nil {
-			return int(i), nil
-		}
-	}
-	return 0, errors.New("couldn't convert to integer")
-}
-
-func getUint64Value(v reflect.Value) uint16 {
-	tk.Pl("%x", v.Interface())
-
-	var p *uint16
-
-	p = (v.Interface().(*uint16))
-
-	return *p
 }
 
 func runScript(codeA string, modeA string, argsA ...string) interface{} {
@@ -357,15 +138,6 @@ func systemCmd(cmdA string, argsA ...string) string {
 	rStrT := tk.Trim(out.String())
 
 	return rStrT
-}
-
-func typeOfValue(vA interface{}) string {
-	return fmt.Sprintf("%T", vA)
-}
-
-func typeOfValueReflect(vA interface{}) string {
-	rs := reflect.TypeOf(vA)
-	return rs.String()
 }
 
 // full version related start
@@ -442,47 +214,6 @@ func LoadPlotImage(p *plot.Plot, w vg.Length, h vg.Length) (*image.RGBA, error) 
 	}
 }
 
-func setValue(p interface{}, v interface{}) {
-	// tk.Pl("%#v", reflect.TypeOf(p).Kind())
-	// p = v
-
-	srcRef := reflect.ValueOf(v)
-	vp := reflect.ValueOf(p)
-	vp.Elem().Set(srcRef)
-}
-
-func getValue(p interface{}) interface{} {
-	vp := reflect.Indirect(reflect.ValueOf(p))
-	return vp.Interface()
-}
-
-func bitXor(p interface{}, v interface{}) interface{} {
-	switch p.(type) {
-	case int:
-		return p.(int) ^ v.(int)
-	case int64:
-		return p.(int64) ^ v.(int64)
-	case int32:
-		return p.(int32) ^ v.(int32)
-	case int16:
-		return p.(int16) ^ v.(int16)
-	case int8:
-		return p.(int8) ^ v.(int8)
-	case uint64:
-		return p.(uint64) ^ v.(uint64)
-	case uint32:
-		return p.(uint32) ^ v.(uint32)
-	case uint16:
-		return p.(uint16) ^ v.(uint16)
-	case uint8:
-		return p.(uint8) ^ v.(uint8)
-	case uint:
-		return p.(uint) ^ v.(uint)
-	}
-
-	return 0
-}
-
 func showHelp() {
 	tk.Pl("Gotx by TopXeQ V%v\n", versionG)
 
@@ -555,7 +286,7 @@ var specialCharsG = "ɪɔː辑ˌɡɜɔŋæʌʃɛəʒɪɑɒθʊː"
 func loadFont() {
 	fonts := giu.Context.IO().Fonts()
 
-	rangeVarT := getVar("FontRange")
+	rangeVarT := tk.GetVar("FontRange")
 
 	ranges := imgui.NewGlyphRanges()
 
@@ -587,7 +318,7 @@ func loadFont() {
 		fontPath = "/Library/Fonts/Microsoft/SimHei.ttf"
 	}
 
-	fontVarT := getVar("Font") // "c:/Windows/Fonts/simsun.ttc"
+	fontVarT := tk.GetVar("Font") // "c:/Windows/Fonts/simsun.ttc"
 
 	if fontVarT != nil {
 		fontPath = fontVarT.(string)
@@ -595,7 +326,7 @@ func loadFont() {
 
 	fontSizeStrT := "16"
 
-	fontSizeVarT := getVar("FontSize")
+	fontSizeVarT := tk.GetVar("FontSize")
 
 	if fontSizeVarT != nil {
 		fontSizeStrT = fontSizeVarT.(string)
@@ -826,7 +557,7 @@ func editRunClick() {
 }
 
 func onButtonCloseClick() {
-	exit()
+	os.Exit(0)
 }
 
 func loopWindow(windowA *giu.MasterWindow, loopA func()) {
@@ -974,10 +705,10 @@ func editFile(fileNameA string) {
 	editorG.SetLanguageDefinitionC()
 
 	// setVar("Font", "c:/Windows/Fonts/simsun.ttc")
-	setVar("FontRange", "COMMON")
-	setVar("FontSize", "15")
+	tk.SetVar("FontRange", "COMMON")
+	tk.SetVar("FontSize", "15")
 
-	setVar("Font", "c:/Windows/Fonts/simhei.ttf")
+	tk.SetVar("Font", "c:/Windows/Fonts/simhei.ttf")
 
 	wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
 	// tk.Pl("%T", wnd)
@@ -1043,30 +774,98 @@ func initYGVM() {
 			"pln":              reflect.ValueOf(fmt.Println),
 			"plv":              reflect.ValueOf(tk.Plv),
 			"plerr":            reflect.ValueOf(tk.PlErr),
-			"exit":             reflect.ValueOf(exit),
-			"setValue":         reflect.ValueOf(setValue),
-			"getValue":         reflect.ValueOf(getValue),
-			"bitXor":           reflect.ValueOf(bitXor),
-			"setVar":           reflect.ValueOf(setVar),
-			"getVar":           reflect.ValueOf(getVar),
-			"checkError":       reflect.ValueOf(checkError),
-			"checkErrorString": reflect.ValueOf(checkErrorString),
+			"exit":             reflect.ValueOf(tk.Exit),
+			"setValue":         reflect.ValueOf(tk.SetValue),
+			"getValue":         reflect.ValueOf(tk.GetValue),
+			"bitXor":           reflect.ValueOf(tk.BitXor),
+			"setVar":           reflect.ValueOf(tk.SetVar),
+			"getVar":           reflect.ValueOf(tk.GetVar),
+			"checkError":       reflect.ValueOf(tk.CheckError),
+			"checkErrorString": reflect.ValueOf(tk.CheckErrorString),
 			"getInput":         reflect.ValueOf(tk.GetUserInput),
 			"getInputf":        reflect.ValueOf(tk.GetInputf),
-			"newSSHClient":     reflect.ValueOf(newSSHClient),
 			"run":              reflect.ValueOf(runFile),
-			"typeOf":           reflect.ValueOf(typeOfValueReflect),
-			"remove":           reflect.ValueOf(remove),
+			"typeOf":           reflect.ValueOf(tk.TypeOfValue),
+			"typeOfReflect":    reflect.ValueOf(tk.TypeOfValueReflect),
+			"remove":           reflect.ValueOf(tk.RemoveItemsInArray),
 			"runScript":        reflect.ValueOf(runScript),
-			"getClipText":      reflect.ValueOf(getClipText),
-			"setClipText":      reflect.ValueOf(setClipText),
+			"getClipText":      reflect.ValueOf(tk.GetClipText),
+			"setClipText":      reflect.ValueOf(tk.SetClipText),
 		}
-
-		GotxSymbols["native"] = GotxSymbols["builtin"]
 
 		ygVMG.Use(GotxSymbols)
 
 	}
+}
+
+func downloadStringFromSSH(sshA string, filePathA string) string {
+	aryT := tk.Split(sshA, ":")
+
+	basePathT, errT := tk.EnsureBasePath("gotx")
+
+	if errT != nil {
+		return tk.GenerateErrorStringF("failed to find base path: %v", errT)
+	}
+
+	if len(aryT) != 5 {
+		aryT = tk.Split(tk.LoadStringFromFile(tk.JoinPath(basePathT, "ssh.cfg"))+filePathA, ":")
+
+		if len(aryT) != 5 {
+			return tk.ErrStrF("invalid ssh config: %v", "")
+		}
+
+	}
+
+	clientT, errT := tk.NewSSHClient(aryT[0], tk.StrToIntWithDefaultValue(aryT[1], 22), aryT[2], aryT[3])
+
+	if errT != nil {
+		return tk.ErrToStrF("failed to create SSH client:", errT)
+	}
+
+	tmpPathT := tk.JoinPath(basePathT, "tmp")
+
+	errT = tk.EnsureMakeDirsE(tmpPathT)
+
+	if errT != nil {
+		return tk.ErrToStrF("failed to create tmp dir:", errT)
+	}
+
+	tmpFileT, errT := tk.CreateTempFile(tmpPathT, "")
+
+	if errT != nil {
+		return tk.ErrToStrF("failed to create tmp dir:", errT)
+	}
+
+	defer os.Remove(tmpFileT)
+
+	errT = clientT.Download(aryT[4], tmpFileT)
+
+	if errT != nil {
+		return tk.ErrToStrF("failed to download file:", errT)
+	}
+
+	fcT := tk.LoadStringFromFile(tmpFileT)
+
+	return fcT
+}
+
+func getCfgString(fileNameA string) string {
+	basePathT, errT := tk.EnsureBasePath("gotx")
+
+	if errT == nil {
+		cfgPathT := tk.JoinPath(basePathT, fileNameA)
+
+		cfgStrT := tk.Trim(tk.LoadStringFromFile(cfgPathT))
+
+		if !tk.IsErrorString(cfgStrT) {
+			return cfgStrT
+		}
+
+		return tk.ErrStrF("failed to get config string: %v", tk.GetErrorString(cfgStrT))
+
+	}
+
+	return tk.ErrStrF("failed to get config string")
 }
 
 func main() {
@@ -1205,105 +1004,128 @@ func main() {
 	ifRemoteT := tk.IfSwitchExistsWhole(argsT, "-remote")
 	ifCloudT := tk.IfSwitchExistsWhole(argsT, "-cloud")
 	ifViewT := tk.IfSwitchExistsWhole(argsT, "-view")
+	sshT := tk.GetSwitchWithDefaultValue(argsT, "-ssh=", "")
 	ifShowResultT := tk.IfSwitchExistsWhole(argsT, "-showResult")
 	verboseG = tk.IfSwitchExistsWhole(argsT, "-verbose")
 
-	for _, scriptT := range scriptsT {
-		var fcT string
+	scriptT := scriptsT[0]
 
-		if ifExampleT {
-			if !tk.EndsWith(scriptT, ".gt") {
-				scriptT += ".gt"
-			}
-			fcT = tk.DownloadPageUTF8("https://gitee.com/topxeq/gotx/raw/master/scripts/"+scriptT, nil, "", 30)
-		} else if ifRemoteT {
-			fcT = tk.DownloadPageUTF8(scriptT, nil, "", 30)
-		} else if ifCloudT {
-			if !tk.EndsWith(scriptT, ".gt") {
-				scriptT += ".gt"
-			}
-			fcT = tk.DownloadPageUTF8("http://scripts.frenchfriend.net/xaf/scripts/"+scriptT, nil, "", 30)
-		} else if ifGoPathT {
-			if !tk.EndsWith(scriptT, ".gt") {
-				scriptT += ".gt"
-			}
+	var fcT string
 
-			fcT = tk.LoadStringFromFile(filepath.Join(tk.GetEnv("GOPATH"), "src", "github.com", "topxeq", "gotx", "scripts", scriptT))
-		} else {
-			fcT = tk.LoadStringFromFile(scriptT)
+	if ifExampleT {
+		if !tk.EndsWith(scriptT, ".gt") {
+			scriptT += ".gt"
 		}
+		fcT = tk.DownloadPageUTF8("https://gitee.com/topxeq/gotx/raw/master/scripts/"+scriptT, nil, "", 30)
+	} else if ifRemoteT {
+		fcT = tk.DownloadPageUTF8(scriptT, nil, "", 30)
+	} else if ifCloudT {
+		if !tk.EndsWith(scriptT, ".gt") {
+			scriptT += ".gt"
+		}
+
+		basePathT, errT := tk.EnsureBasePath("gotx")
+
+		gotT := false
+
+		if errT == nil {
+			cfgPathT := tk.JoinPath(basePathT, "cloud.cfg")
+
+			cfgStrT := tk.Trim(tk.LoadStringFromFile(cfgPathT))
+
+			if !tk.IsErrorString(cfgStrT) {
+				fcT = tk.DownloadPageUTF8(cfgStrT+scriptT, nil, "", 30)
+
+				gotT = true
+			}
+
+		}
+
+		if !gotT {
+			fcT = tk.DownloadPageUTF8(scriptT, nil, "", 30)
+		}
+	} else if sshT != "" {
+		if (!tk.EndsWith(scriptT, ".gox")) && (!tk.EndsWith(scriptT, ".ql")) {
+			scriptT += ".gox"
+		}
+
+		fcT = downloadStringFromSSH(sshT, scriptT)
 
 		if tk.IsErrorString(fcT) {
-			tk.Pl("failed to load script from %v: %v", scriptT, tk.GetErrorString(fcT))
-
-			continue
-		}
-
-		if tk.StartsWith(fcT, "//TXDEF#") {
-			if decryptRunCodeT == "" {
-				tk.Prf("Password: ")
-				decryptRunCodeT = tk.Trim(tk.GetInputBufferedScan())
-
-				// fcT = fcT[8:]
-			}
-		}
-
-		if decryptRunCodeT != "" {
-			fcT = tk.DecryptStringByTXDEF(fcT, decryptRunCodeT)
-		}
-
-		if ifViewT {
-			tk.Pl("%v", fcT)
-
+			tk.Pl("failed to get script from SSH: %v", tk.GetErrorString(fcT))
 			return
+
+		}
+	} else if ifGoPathT {
+		if !tk.EndsWith(scriptT, ".gt") {
+			scriptT += ".gt"
 		}
 
-		if true {
-			initYGVM()
-			// i := interp.New(interp.Options{})
-
-			result, errT := ygVMG.Eval(fcT)
-			if errT != nil {
-				tk.Pl("failed to run script(%v): %v", scriptT, errT)
-
-				if p, ok := errT.(interp.Panic); ok {
-					tk.Pl("%v", string(p.Stack))
-				}
-
-			}
-
-			if ifShowResultT {
-				tk.Pl("%v", result)
-			}
-
-			return
-		}
-		// full version related end
+		fcT = tk.LoadStringFromFile(filepath.Join(tk.GetEnv("GOPATH"), "src", "github.com", "topxeq", "gotx", "scripts", scriptT))
+	} else {
+		fcT = tk.LoadStringFromFile(scriptT)
 	}
+
+	if tk.IsErrorString(fcT) {
+		tk.Pl("failed to load script from %v: %v", scriptT, tk.GetErrorString(fcT))
+
+		return
+	}
+
+	if tk.StartsWith(fcT, "//TXDEF#") {
+		if decryptRunCodeT == "" {
+			tk.Prf("Password: ")
+			decryptRunCodeT = tk.Trim(tk.GetInputBufferedScan())
+
+			// fcT = fcT[8:]
+		}
+	}
+
+	if decryptRunCodeT != "" {
+		fcT = tk.DecryptStringByTXDEF(fcT, decryptRunCodeT)
+	}
+
+	if ifViewT {
+		tk.Pl("%v", fcT)
+
+		return
+	}
+
+	if true {
+		initYGVM()
+		// i := interp.New(interp.Options{})
+
+		_, errT := ygVMG.Eval(`import(. "builtin")`)
+		if errT != nil {
+			tk.Pl("failed to run init routine(%v): %v", "init", errT)
+
+			if p, ok := errT.(interp.Panic); ok {
+				tk.Pl("%v", string(p.Stack))
+			}
+
+			return
+
+		}
+
+		result, errT := ygVMG.Eval(fcT)
+		if errT != nil {
+			tk.Pl("failed to run script(%v): %v", scriptT, errT)
+
+			if p, ok := errT.(interp.Panic); ok {
+				tk.Pl("%v", string(p.Stack))
+			}
+
+		}
+
+		if ifShowResultT {
+			tk.Pl("%v", result)
+		}
+
+		return
+	}
+	// full version related end
 }
 
 func test() {
-	// return
-
-	// p, _ := plot.New()
-
-	// p.Title.Text = "a"
-
-	// tk.Pl("p: %#v", p)
-
-	// typeT := reflect.TypeOf(p)
-
-	// m := 1
-	// kind := 2
-	// name := "aa"
-
-	// fmt.Printf("1m: %#v, obj: %#v, kind: %v, %v, Name: %v\n", m, typeT, kind, m, name)
-	// lenT := typeT.NumMethod()
-
-	// fmt.Printf("typeT: %#v, methodNum: %#v\n", typeT, lenT)
-	// for i := 0; i < lenT; i++ {
-	// 	fmt.Printf("m %v: %#v, method: %#v\n", i, typeT.Method(i), typeT.Method(i).Name)
-
-	// }
 
 }
