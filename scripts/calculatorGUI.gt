@@ -1,21 +1,18 @@
 package main
 
 import (
-	. "builtin"
-	"github.com/AllenDang/giu"
 	"os"
+
+	"github.com/AllenDang/giu"
 )
 
 var text1 string
 
 func onButton1Click() {
-	println(1)
-
 	// evaluate the expression in the text input
 	t := text1
-	println(2)
 
-	rs := Eval(t)
+	rs := eval(t)
 
 	println(rs)
 

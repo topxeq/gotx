@@ -77,6 +77,43 @@ func ygEval(strA string) string {
 
 	vmT := interp.New(interp.Options{})
 
+	vmT.Use(stdlib.Symbols)
+
+	GotxSymbols["builtin"] = map[string]reflect.Value{
+		"eval":             reflect.ValueOf(ygEval),
+		"printfln":         reflect.ValueOf(tk.Pl),
+		"fprintf":          reflect.ValueOf(fmt.Fprintf),
+		"pl":               reflect.ValueOf(tk.Pl),
+		"pln":              reflect.ValueOf(fmt.Println),
+		"plv":              reflect.ValueOf(tk.Plv),
+		"plerr":            reflect.ValueOf(tk.PlErr),
+		"exit":             reflect.ValueOf(tk.Exit),
+		"setValue":         reflect.ValueOf(tk.SetValue),
+		"getValue":         reflect.ValueOf(tk.GetValue),
+		"bitXor":           reflect.ValueOf(tk.BitXor),
+		"setVar":           reflect.ValueOf(tk.SetVar),
+		"getVar":           reflect.ValueOf(tk.GetVar),
+		"checkError":       reflect.ValueOf(tk.CheckError),
+		"checkErrorString": reflect.ValueOf(tk.CheckErrorString),
+		"getInput":         reflect.ValueOf(tk.GetUserInput),
+		"getInputf":        reflect.ValueOf(tk.GetInputf),
+		"run":              reflect.ValueOf(runFile),
+		"typeOf":           reflect.ValueOf(tk.TypeOfValue),
+		"typeOfReflect":    reflect.ValueOf(tk.TypeOfValueReflect),
+		"remove":           reflect.ValueOf(tk.RemoveItemsInArray),
+		"runScript":        reflect.ValueOf(runScript),
+		"getClipText":      reflect.ValueOf(tk.GetClipText),
+		"setClipText":      reflect.ValueOf(tk.SetClipText),
+	}
+
+	vmT.Use(GotxSymbols)
+
+	_, errT := vmT.Eval(`import(. "builtin")`)
+	if errT != nil {
+		return tk.GenerateErrorStringF("failed to run init routine(%v): %v", "init", errT)
+
+	}
+
 	result, errT := vmT.Eval(strA)
 	if errT != nil {
 		return tk.GenerateErrorStringF("failed to run script: %v", errT)
@@ -90,33 +127,55 @@ func panicIt(valueA interface{}) {
 }
 
 func runScript(codeA string, modeA string, argsA ...string) interface{} {
+	if modeA == "" || modeA == "0" || modeA == "yg" {
+		vmT := interp.New(interp.Options{})
 
-	if modeA == "" || modeA == "0" || modeA == "ql" {
-		// vmT := qlang.New()
+		vmT.Use(stdlib.Symbols)
 
-		// if argsA != nil && len(argsA) > 0 {
-		// 	vmT.SetVar("argsG", argsA)
-		// }
+		GotxSymbols["builtin"] = map[string]reflect.Value{
+			"eval":             reflect.ValueOf(ygEval),
+			"printfln":         reflect.ValueOf(tk.Pl),
+			"fprintf":          reflect.ValueOf(fmt.Fprintf),
+			"pl":               reflect.ValueOf(tk.Pl),
+			"pln":              reflect.ValueOf(fmt.Println),
+			"plv":              reflect.ValueOf(tk.Plv),
+			"plerr":            reflect.ValueOf(tk.PlErr),
+			"exit":             reflect.ValueOf(tk.Exit),
+			"setValue":         reflect.ValueOf(tk.SetValue),
+			"getValue":         reflect.ValueOf(tk.GetValue),
+			"bitXor":           reflect.ValueOf(tk.BitXor),
+			"setVar":           reflect.ValueOf(tk.SetVar),
+			"getVar":           reflect.ValueOf(tk.GetVar),
+			"checkError":       reflect.ValueOf(tk.CheckError),
+			"checkErrorString": reflect.ValueOf(tk.CheckErrorString),
+			"getInput":         reflect.ValueOf(tk.GetUserInput),
+			"getInputf":        reflect.ValueOf(tk.GetInputf),
+			"run":              reflect.ValueOf(runFile),
+			"typeOf":           reflect.ValueOf(tk.TypeOfValue),
+			"typeOfReflect":    reflect.ValueOf(tk.TypeOfValueReflect),
+			"remove":           reflect.ValueOf(tk.RemoveItemsInArray),
+			"runScript":        reflect.ValueOf(runScript),
+			"getClipText":      reflect.ValueOf(tk.GetClipText),
+			"setClipText":      reflect.ValueOf(tk.SetClipText),
+		}
 
-		// retG = notFoundG
+		vmT.Use(GotxSymbols)
 
-		// errT := vmT.SafeEval(codeA)
+		_, errT := ygVMG.Eval(`import(. "builtin")`)
+		if errT != nil {
+			return tk.GenerateErrorStringF("failed to run init routine(%v): %v", "init", errT)
 
-		// if errT != nil {
-		// 	return errT.Error()
-		// }
+		}
 
-		// // if retG != notFoundG {
-		// // 	fmt.Println(retG)
-		// // }
+		result, errT := vmT.Eval(codeA)
+		if errT != nil {
+			return tk.GenerateErrorStringF("failed to run script: %v", errT)
+		}
 
-		// // rs, _ := vmT.GetVar("outG")
+		if result.IsValid() {
+			return tk.Spr("%v", result)
+		}
 
-		// // if !ok {
-		// // 	return ""
-		// // }
-
-		// return retG
 		return nil
 	} else {
 		return systemCmd("gotx", append([]string{codeA}, argsA...)...)
@@ -259,7 +318,9 @@ func runInteractive() int {
 			continue
 		}
 
-		fmt.Println(result)
+		if result.IsValid() {
+			fmt.Println(result)
+		}
 
 		following = false
 		source = ""
@@ -795,6 +856,14 @@ func initYGVM() {
 
 		ygVMG.Use(GotxSymbols)
 
+		_, errT := ygVMG.Eval(`import(. "builtin")`)
+		if errT != nil {
+			tk.Pl("failed to run init routine(%v): %v", "init", errT)
+
+			return
+
+		}
+
 	}
 }
 
@@ -1095,17 +1164,17 @@ func main() {
 		initYGVM()
 		// i := interp.New(interp.Options{})
 
-		_, errT := ygVMG.Eval(`import(. "builtin")`)
-		if errT != nil {
-			tk.Pl("failed to run init routine(%v): %v", "init", errT)
+		// _, errT := ygVMG.Eval(`import(. "builtin")`)
+		// if errT != nil {
+		// 	tk.Pl("failed to run init routine(%v): %v", "init", errT)
 
-			if p, ok := errT.(interp.Panic); ok {
-				tk.Pl("%v", string(p.Stack))
-			}
+		// 	if p, ok := errT.(interp.Panic); ok {
+		// 		tk.Pl("%v", string(p.Stack))
+		// 	}
 
-			return
+		// 	return
 
-		}
+		// }
 
 		result, errT := ygVMG.Eval(fcT)
 		if errT != nil {
