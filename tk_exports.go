@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/topxeq/tk"
 	"reflect"
+
+	"github.com/topxeq/tk"
 )
 
 func init() {
@@ -213,6 +214,8 @@ func init() {
 		"IsEmptyTrim":                              reflect.ValueOf(tk.IsEmptyTrim),
 		"IsErrorString":                            reflect.ValueOf(tk.IsErrorString),
 		"IsFile":                                   reflect.ValueOf(tk.IsFile),
+		"IsFloat64NearlyEqual":                     reflect.ValueOf(tk.IsFloat64NearlyEqual),
+		"IsValidEmail":                             reflect.ValueOf(tk.IsValidEmail),
 		"IsYesterday":                              reflect.ValueOf(tk.IsYesterday),
 		"JSONToMapStringString":                    reflect.ValueOf(tk.JSONToMapStringString),
 		"JSONToObject":                             reflect.ValueOf(tk.JSONToObject),
