@@ -16,3 +16,6 @@ Currently supported 3rd-party libraies: github.com/topxeq/tk, github.com/topxeq/
 
 If more packages are required, please compile the source code, add the packages you need, refer to the examples of the packages already supported.
 
+### Install
+
+Download it from [here](http://topget.org/gox.html). Extract the download zip file, and put the executable anywhere but best in the system PATH. Run it from a command-line console.
