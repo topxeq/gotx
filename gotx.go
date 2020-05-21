@@ -60,7 +60,7 @@ import (
 
 // Non GUI related
 
-var versionG = "0.988a"
+var versionG = "0.989a"
 
 var verboseG = false
 
@@ -1070,6 +1070,7 @@ func main() {
 
 	ifExampleT := tk.IfSwitchExistsWhole(argsT, "-example")
 	ifGoPathT := tk.IfSwitchExistsWhole(argsT, "-gopath")
+	ifLocalT := tk.IfSwitchExistsWhole(argsT, "-local")
 	ifRemoteT := tk.IfSwitchExistsWhole(argsT, "-remote")
 	ifCloudT := tk.IfSwitchExistsWhole(argsT, "-cloud")
 	ifViewT := tk.IfSwitchExistsWhole(argsT, "-view")
@@ -1114,7 +1115,7 @@ func main() {
 			fcT = tk.DownloadPageUTF8(scriptT, nil, "", 30)
 		}
 	} else if sshT != "" {
-		if (!tk.EndsWith(scriptT, ".gox")) && (!tk.EndsWith(scriptT, ".ql")) {
+		if (!tk.EndsWith(scriptT, ".gox")) && (!tk.EndsWith(scriptT, ".tg")) {
 			scriptT += ".gox"
 		}
 
@@ -1131,6 +1132,20 @@ func main() {
 		}
 
 		fcT = tk.LoadStringFromFile(filepath.Join(tk.GetEnv("GOPATH"), "src", "github.com", "topxeq", "gotx", "scripts", scriptT))
+	} else if ifLocalT {
+		if (!tk.EndsWith(scriptT, ".gt")) && (!tk.EndsWith(scriptT, ".yg")) {
+			scriptT += ".gt"
+		}
+
+		localPathT := getCfgString("localScriptPath.cfg")
+
+		if tk.IsErrorString(localPathT) {
+			tk.Pl("failed to get local path: %v", tk.GetErrorString(localPathT))
+
+			return
+		}
+
+		fcT = tk.LoadStringFromFile(filepath.Join(localPathT, scriptT))
 	} else {
 		fcT = tk.LoadStringFromFile(scriptT)
 	}

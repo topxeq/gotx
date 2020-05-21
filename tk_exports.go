@@ -367,6 +367,8 @@ func init() {
 		"UrlDecode":                                reflect.ValueOf(tk.UrlDecode),
 		"UrlEncode":                                reflect.ValueOf(tk.UrlEncode),
 		"UrlEncode2":                               reflect.ValueOf(tk.UrlEncode2),
+		"GetOSArgs":                                reflect.ValueOf(tk.GetOSArgs),
+		"GetAllOSParameters":                       reflect.ValueOf(tk.GetAllOSParameters),
 
 		// type definitions
 		"ExitCallback":  reflect.ValueOf((*tk.ExitCallback)(nil)),
