@@ -370,6 +370,7 @@ func init() {
 		"GetOSArgs":                                reflect.ValueOf(tk.GetOSArgs),
 		"GetAllOSParameters":                       reflect.ValueOf(tk.GetAllOSParameters),
 		"GetInputPasswordf":                        reflect.ValueOf(tk.GetInputPasswordf),
+		"GetMSIStringWithDefault":                  reflect.ValueOf(tk.GetMSIStringWithDefault),
 
 		// type definitions
 		"ExitCallback":  reflect.ValueOf((*tk.ExitCallback)(nil)),
