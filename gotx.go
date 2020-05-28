@@ -1090,7 +1090,7 @@ func main() {
 	} else if ifRemoteT {
 		fcT = tk.DownloadPageUTF8(scriptT, nil, "", 30)
 	} else if ifCloudT {
-		if !tk.EndsWith(scriptT, ".gt") {
+		if (!tk.EndsWith(scriptT, ".gt")) && (!tk.EndsWith(scriptT, ".yg")) && (!tk.EndsWith(scriptT, ".go")) {
 			scriptT += ".gt"
 		}
 
@@ -1115,7 +1115,7 @@ func main() {
 			fcT = tk.DownloadPageUTF8(scriptT, nil, "", 30)
 		}
 	} else if sshT != "" {
-		if (!tk.EndsWith(scriptT, ".gox")) && (!tk.EndsWith(scriptT, ".tg")) {
+		if (!tk.EndsWith(scriptT, ".gt")) && (!tk.EndsWith(scriptT, ".yg")) && (!tk.EndsWith(scriptT, ".go")) {
 			scriptT += ".gox"
 		}
 
@@ -1127,13 +1127,13 @@ func main() {
 
 		}
 	} else if ifGoPathT {
-		if !tk.EndsWith(scriptT, ".gt") {
+		if (!tk.EndsWith(scriptT, ".gt")) && (!tk.EndsWith(scriptT, ".yg")) && (!tk.EndsWith(scriptT, ".go")) {
 			scriptT += ".gt"
 		}
 
 		fcT = tk.LoadStringFromFile(filepath.Join(tk.GetEnv("GOPATH"), "src", "github.com", "topxeq", "gotx", "scripts", scriptT))
 	} else if ifLocalT {
-		if (!tk.EndsWith(scriptT, ".gt")) && (!tk.EndsWith(scriptT, ".yg")) {
+		if (!tk.EndsWith(scriptT, ".gt")) && (!tk.EndsWith(scriptT, ".yg")) && (!tk.EndsWith(scriptT, ".go")) {
 			scriptT += ".gt"
 		}
 
