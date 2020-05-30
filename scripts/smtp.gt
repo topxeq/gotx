@@ -1,0 +1,76 @@
+package main
+
+// set the short name for the package
+import (
+	"github.com/domodwyer/mailyak"
+	"github.com/topxeq/tk"
+)
+
+func main() {
+	println(1)
+	// 3 ways to new a SMTP client to send mail, the first one supports TLS/Secure connection to mail servers
+	// mail := mailyak.New("mail.example.com:25", smtp.PlainAuth("", "user@example.com", "mypassword", "mail.example.com"))
+	mail := mailyak.New("mail.example.com:25", tk.GetPlainAuth("", "user@example.com", "mypassword", "mail.example.com"))
+	// mail := mailyak.New("mail.example.com:25", tk.GetLoginAuth("user@example.com", "mypassword"))
+
+	println(2)
+	mail.To("test@example.com")
+
+	// mail.From("abc@other.com")
+	// mail.FromName("ABC")
+
+	// mail.Subject("[Important!] The Submission Result")
+
+	// 	mailBodyHtml := `
+	// <!DOCTYPE html>
+	// <html>
+
+	// <head>
+	//     <meta charset="utf-8">
+	//     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	// </head>
+
+	// <body style="font-family: Helvetica">
+	//     <div>&nbsp;
+	//         <br />
+	//         <br /><br />
+	//         Dear Mr. Tom,<br />
+
+	// I am pleased to inform you that the submission has been accepted for publication.<br />
+	// <br />
+	// Yours sincerely<br />
+	// Jerry<br />
+
+	//         <br />
+	//         <br />
+
+	//     </div>
+	// </body>
+
+	// </html>
+	// `
+
+	// 	println(3)
+	// 	// Write your HTML context in mail.HTML()
+	// 	_, errT := io.WriteString(mail.HTML(), mailBodyHtml)
+
+	// 	if errT != nil {
+	// 		tk.Pl("failed to write mail: %v", errT)
+	// 		return
+	// 	}
+
+	// 	println(4)
+	// 	mail.Plain().Set("Please use a standard mail or web-mail client")
+
+	// 	// Send the mail
+	// 	println(5)
+	// 	errT = mail.Send()
+	// 	println(6)
+	// 	if errT != nil {
+	// 		tk.Pl("failed to send mail: %v", errT)
+	// 		return
+	// 	}
+
+	// 	tk.Pl("Sent!")
+
+}
