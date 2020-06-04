@@ -71,7 +71,7 @@ func main() {
 			continue
 		}
 
-		srcT := tk.LoadStringFromFile(fileNameT)
+		srcT := tk.LoadStringFromFile(v)
 
 		if tk.IsErrorString(srcT) {
 			pl("failed to read source file [%v/%v] %v: %v", i, lenT, fileNameT, tk.GetErrorString(srcT))
