@@ -12,7 +12,7 @@ Support GUI programming with OpenGL or LCL library.
 
 A command-line only version (GotXc) is also available.
 
-Currently supported 3rd-party libraies: github.com/topxeq/tk(many useful functions), github.com/topxeq/sqltk(SQL databases), github.com/beevik/etree(XML processing), github.com/AllenDang/giu(OpenGL GUI), github.com/360EntSecGroup-Skylar/excelize(Excel file handling).
+Currently supported 3rd-party libraies: github.com/topxeq/tk(many useful functions), github.com/topxeq/sqltk(SQL databases), github.com/beevik/etree(XML processing), github.com/AllenDang/giu(OpenGL GUI), github.com/360EntSecGroup-Skylar/excelize(Excel file handling), github.com/aliyun/alibaba-cloud-sdk-go/services/dysmsapi(Send Aliyun SMS), github.com/boombuler/barcode & github.com/boombuler/barcode/qr(generate QR Code), github.com/sciter-sdk/go-sciter & github.com/sciter-sdk/go-sciter/window(support cross-platform HTML/CSS/JavaScript GUI programming).
 
 If more packages are required, please compile the source code, add the packages you need, refer to the examples of the packages already supported.
 
