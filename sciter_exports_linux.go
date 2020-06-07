@@ -1,9 +1,10 @@
+// +build linux
+
 package main
 
 import (
-	"reflect"
-
 	gosciter "github.com/sciter-sdk/go-sciter"
+	"reflect"
 )
 
 func init() {
@@ -210,7 +211,6 @@ func init() {
 		"POST_ASYNC":                                 reflect.ValueOf(gosciter.POST_ASYNC),
 		"POST_SYNC":                                  reflect.ValueOf(gosciter.POST_SYNC),
 		"PROP_MOUSE_BUTTON":                          reflect.ValueOf(gosciter.PROP_MOUSE_BUTTON),
-		"ProcND":                                     reflect.ValueOf(gosciter.ProcND),
 		"REQUEST_TOOLTIP":                            reflect.ValueOf(gosciter.REQUEST_TOOLTIP),
 		"ROOT_RELATIVE":                              reflect.ValueOf(gosciter.ROOT_RELATIVE),
 		"ROWS_DATA_REQUEST":                          reflect.ValueOf(gosciter.ROWS_DATA_REQUEST),

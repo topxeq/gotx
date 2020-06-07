@@ -1,9 +1,8 @@
 package main
 
 import (
-	"reflect"
-
 	"github.com/sciter-sdk/go-sciter/window"
+	"reflect"
 )
 
 func init() {
