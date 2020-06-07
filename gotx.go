@@ -821,6 +821,8 @@ func runFile(argsA ...string) interface{} {
 
 var GotxSymbols = map[string]map[string]reflect.Value{}
 
+var argsG = os.Args[1:]
+
 func initYGVM() {
 	if ygVMG == nil {
 		ygVMG = interp.New(interp.Options{})
@@ -852,14 +854,12 @@ func initYGVM() {
 			"runScript":        reflect.ValueOf(runScript),
 			"getClipText":      reflect.ValueOf(tk.GetClipText),
 			"setClipText":      reflect.ValueOf(tk.SetClipText),
+			"argsG":            reflect.ValueOf(argsG),
 		}
 
 		ygVMG.Use(GotxSymbols)
 
-		_, errT := ygVMG.Eval(`import(. "builtin")
-
-		var argsG = os.Args[1:]
-		`)
+		_, errT := ygVMG.Eval(`import(. "builtin")`)
 		if errT != nil {
 			tk.Pl("failed to run init routine(%v): %v", "init", errT)
 
