@@ -60,7 +60,7 @@ import (
 
 // Non GUI related
 
-var versionG = "0.995a"
+var versionG = "0.996a"
 
 var verboseG = false
 
@@ -856,7 +856,10 @@ func initYGVM() {
 
 		ygVMG.Use(GotxSymbols)
 
-		_, errT := ygVMG.Eval(`import(. "builtin")`)
+		_, errT := ygVMG.Eval(`import(. "builtin")
+
+		var argsG = os.Args[1:]
+		`)
 		if errT != nil {
 			tk.Pl("failed to run init routine(%v): %v", "init", errT)
 
