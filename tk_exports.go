@@ -380,6 +380,8 @@ func init() {
 		"UrlEncode":                                reflect.ValueOf(tk.UrlEncode),
 		"UrlEncode2":                               reflect.ValueOf(tk.UrlEncode2),
 		"MSSFromJSON":                              reflect.ValueOf(tk.MSSFromJSON),
+		"LoadMSSFromJSONFile":                      reflect.ValueOf(tk.LoadMSSFromJSONFile),
+		"SaveMSSToJSONFile":                        reflect.ValueOf(tk.SaveMSSToJSONFile),
 
 		// type definitions
 		"ExitCallback":  reflect.ValueOf((*tk.ExitCallback)(nil)),
