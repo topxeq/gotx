@@ -2,21 +2,18 @@ package main
 
 import "fmt"
 
-func div(a, b int) (result int) {
-	defer func() {
-		r := recover()
-
-		fmt.Printf("r = %#v\n", r)
-
-		if r != nil {
-			result = 0
-		}
-	}()
-
-	return a / b
-}
-
 func main() {
-	println(div(30, 2))
+
+	m := make(map[string]string, 0)
+
+	println(m)
+
+	m["a"] = fmt.Sprintf("%v", 0.1)
+
+	println(m)
+
+	m["b"] = string(fmt.Sprintf("%v", 0.1))
+
+	println(m)
 
 }
