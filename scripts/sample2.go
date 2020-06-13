@@ -1,11 +1,14 @@
 package main
 
+import "fmt"
+
 func div(a, b int) (result int) {
 	defer func() {
+		r := recover()
 
-		// fmt.Printf("r = %#v\n", r)
+		fmt.Printf("r = %#v\n", r)
 
-		if r := recover(); r != nil {
+		if r != nil {
 			result = 0
 		}
 	}()

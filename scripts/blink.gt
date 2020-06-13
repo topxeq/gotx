@@ -1,0 +1,37 @@
+package main
+
+import (
+	"github.com/topxeq/blink"
+	// "github.com/elazarl/go-bindata-assetfs"
+	// "log"
+)
+
+func main() {
+	//设置调试模式
+	// blink.SetDebugMode(false)
+
+	//初始化blink模块
+	err := blink.InitBlink()
+	if err != nil {
+		// log.Fatal(err)
+	}
+
+	// //注册虚拟网络文件系统到域名app
+	// blink.RegisterFileSystem("app", &assetfs.AssetFS{
+	// 	Asset:     bin.Asset,
+	// 	AssetDir:  bin.AssetDir,
+	// 	AssetInfo: bin.AssetInfo,
+	// })
+
+	//新建view,加载URL
+	view := blink.NewWebView(false, 1366, 920)
+	//直接加载虚拟文件系统中的网页
+	view.LoadURL("http://baidu.com")
+	view.SetWindowTitle("Golang GUI Application")
+	view.MoveToCenter()
+	view.ShowWindow()
+	// view.ShowDevTools()
+
+	<-make(chan bool)
+
+}
