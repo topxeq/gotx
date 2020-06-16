@@ -1,19 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
 
-	m := make(map[string]string, 0)
+	fn1 := func(args ...*time.Duration) string {
+		rs := fmt.Sprintf("%v", args[0])
 
-	println(m)
+		return rs
+	}
 
-	m["a"] = fmt.Sprintf("%v", 0.1)
-
-	println(m)
-
-	m["b"] = string(fmt.Sprintf("%v", 0.1))
-
-	println(m)
+	fmt.Printf("%#v\n", fn1)
 
 }

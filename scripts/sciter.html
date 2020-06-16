@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>事件处理</title>
+    <style>
+        @import url(colorizer.css);
+    </style>
+    <script type="text/tiscript">
+        if  (view.connectToInspector) {
+            view.connectToInspector(rootElement, inspectorIpAddress);
+        }
+
+        async function loader() {
+            var [str,status] = await view.request { url:self.url("colorizer.tis"), output:#string };
+              $(pre).load(str, "tis");
+        }
+    
+  
+        function self.ready() {
+            // var r = 12.6;
+            // stdout.printf( "%f" , r );
+            // var x=123;
+            // debug log(x={x}, x:{x}, x({x}), x[{x}]);
+            // var [str,status] = await view.request { url:self.url("colorizer.tis"), output:#string };
+            // $(plaintext).value = str.toString();
+            // str.close();
+
+            stdout.println(__FOLDER__, __FILE__, self.url(""));
+
+            $(plaintext).value = "<html>\n<body>\n<span>abc</span>\n</body></html>";
+
+            // loader();
+            var a = self.url("colorizer.tis")
+            debug log(a={a});
+            //var str = this.request(0, #get, a);
+            //$(plaintext).value = str.toString();
+            //str.close();
+
+            //loader();
+            stdout.println(URL.toPath(a));
+            var stream = Stream.openFile("colorizer.tis", "r");
+            stdout.println(stream);
+            if( !stream )
+            {
+                stdout.println("openFile failed");
+                return;
+            }
+
+            //return parseData(stream);
+
+        }
+    </script>
+</head>
+
+<body>
+    <button id="btn1">点我</button>
+    <button id="btn2">点我2</button>
+    <button id="btn3">点我3</button>
+    <button id="btn4">点我4</button>
+    <script type="text/tiscript">
+        // var root = view.root;
+ 
+    </script>
+
+    <plaintext#source type="text/html">
+        </plaintext>
+        <pre type />
+        </body>
+</html>
