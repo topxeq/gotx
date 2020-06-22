@@ -253,7 +253,7 @@ func main() {
 			@set element-colorizer 
 			{
 				:root { 
-					aspect: colorize url(colorizer.tis); 
+					aspect: colorize; 
 					background-color: #fafaff;
 						padding:4dip;
 						border:1dip dashed #bbb;
@@ -279,9 +279,9 @@ func main() {
 
 		</style>
 		<script type="text/tiscript">
-			if( view.connectToInspector ) {
-				view.connectToInspector(rootElement, inspectorIpAddress);
-			}
+			//if( view.connectToInspector ) {
+			//	view.connectToInspector(rootElement, inspectorIpAddress);
+			//}
 
 			//stdout.println("__FOLDER__:", __FOLDER__);
 			//stdout.println("__FILE__:", __FILE__);
@@ -289,7 +289,13 @@ func main() {
 			function selectFileJS() {
 				var fn = view.selectFile(#open, "Gotx Files (*.gt,*.go)|*.gt;*.go|All Files (*.*)|*.*" , "gotx" );
 
-				stdout.Println(fn);
+				stdout.println(fn);
+
+				var fc = view.loadStringFromFile(URL.toPath(fn));
+
+				stdout.println(fc);
+
+				$(plaintext).value = fc;
 
 				return fn;
 			}
@@ -302,6 +308,16 @@ func main() {
 				//var a = self.url("colorizer.tis");
 				//debug log(a={a});
 
+				view.connectToInspector(rootElement, inspectorIpAddress);
+
+				$(#btn2).onClick = function() {
+					selectFileJS();
+				}
+
+				// event click $(#btn2) {
+				// 	//selectFileJS();
+				// };
+
 				$(plaintext).value = "<html>\n<body>\n<span>abc</span>\n</body></html>";
 
 			}
@@ -309,13 +325,9 @@ func main() {
 	</head>
 	<body>
 		<button id="btn1">Load...</button>
-		<button id="btn2" onclick="selectFileJS()">点我2</button>
+		<button id="btn2">点我2</button>
 		<button id="btn3">点我3</button>
 		<button id="btn4">点我4</button>
-		<script type="text/tiscript">
-			// var root = view.root;
-	 
-		</script>
 
 		<plaintext#source type="text/html"></plaintext>
 		<pre type />
@@ -331,6 +343,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	w.SetOption(sciter.SCITER_SET_SCRIPT_RUNTIME_FEATURES, sciter.ALLOW_FILE_IO|sciter.ALLOW_SOCKET_IO|sciter.ALLOW_EVAL|sciter.ALLOW_SYSINFO)
 
 	w.LoadHtml(htmlT, "")
 

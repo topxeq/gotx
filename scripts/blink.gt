@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/topxeq/blink"
+	"github.com/topxeq/tk"
 	// "github.com/elazarl/go-bindata-assetfs"
 	// "log"
 )
@@ -26,12 +27,20 @@ func main() {
 	//新建view,加载URL
 	view := blink.NewWebView(false, 1366, 920)
 	//直接加载虚拟文件系统中的网页
-	view.LoadURL("http://baidu.com")
+	view.LoadURL("file:///D:/CharDocs/DownTemp/txtool/calc/calc_simple.html")
 	view.SetWindowTitle("Golang GUI Application")
 	view.MoveToCenter()
 	view.ShowWindow()
 	// view.ShowDevTools()
 
-	<-make(chan bool)
+	// <-make(chan bool)
+
+	for true {
+		if view.IsDestroy {
+			break
+		}
+
+		tk.SleepSeconds(1)
+	}
 
 }
