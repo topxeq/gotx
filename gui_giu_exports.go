@@ -11,6 +11,13 @@ import (
 	"github.com/topxeq/tk"
 )
 
+func loopWindow(windowA *giu.MasterWindow, loopA func()) {
+	// wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
+
+	windowA.Main(loopA)
+
+}
+
 func loadFont() {
 	fonts := giu.Context.IO().Fonts()
 
@@ -193,8 +200,8 @@ func init() {
 		"SelectSaveFile":  reflect.ValueOf(selectFileToSaveGUI),
 		"SelectDirectory": reflect.ValueOf(selectDirectoryGUI),
 
-		"EditFile": reflect.ValueOf(editFile),
-		// "LoopWindow": reflect.ValueOf(loopWindow),
+		"EditFile":   reflect.ValueOf(editFile),
+		"LoopWindow": reflect.ValueOf(loopWindow),
 
 		"LayoutP": reflect.ValueOf(giu.Layout{}),
 
