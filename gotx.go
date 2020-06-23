@@ -60,7 +60,7 @@ import (
 
 // Non GUI related
 
-var versionG = "0.996a"
+var versionG = "0.997a"
 
 var verboseG = false
 
@@ -963,6 +963,33 @@ func main() {
 	if tk.IfSwitchExistsWhole(argsT, "-h") {
 		showHelp()
 		return
+	}
+
+	if tk.IfSwitchExistsWhole(argsT, "-initgui") {
+		applicationPathT := tk.GetApplicationPath()
+
+		osT := tk.GetOSName()
+
+		if tk.Contains(osT, "inux") {
+			tk.Pl("Please visit the following URL to find out how to make Sciter environment ready in Linux: ")
+
+			return
+		} else if tk.Contains(osT, "arwin") {
+			tk.Pl("Please visit the following URL to find out how to make Sciter environment ready in Linux: ")
+
+			return
+		} else {
+			rs := tk.DownloadFile("http://scripts.frenchfriend.net/pub/sciter.dll", applicationPathT, "sciter.dll", false)
+
+			if tk.IsErrorString(rs) {
+				tk.Pl("failed to download Sciter DLL file.")
+				return
+			}
+
+			tk.Pl("Sciter DLL downloaded to application path.")
+
+			return
+		}
 	}
 
 	scriptsT := tk.GetAllParameters(argsT)[1:]

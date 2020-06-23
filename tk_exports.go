@@ -1,6 +1,8 @@
 package main
 
 import (
+	"go/constant"
+	"go/token"
 	"reflect"
 
 	"github.com/topxeq/tk"
@@ -52,6 +54,7 @@ func init() {
 		"CreateTXCollection":                       reflect.ValueOf(tk.CreateTXCollection),
 		"CreateTempFile":                           reflect.ValueOf(tk.CreateTempFile),
 		"DebugModeG":                               reflect.ValueOf(&tk.DebugModeG).Elem(),
+		"DecodeFromBase64":                         reflect.ValueOf(tk.DecodeFromBase64),
 		"DecodeStringCustom":                       reflect.ValueOf(tk.DecodeStringCustom),
 		"DecodeStringSimple":                       reflect.ValueOf(tk.DecodeStringSimple),
 		"DecodeStringUnderline":                    reflect.ValueOf(tk.DecodeStringUnderline),
@@ -79,6 +82,7 @@ func init() {
 		"EncodeStringCustomEx":                     reflect.ValueOf(tk.EncodeStringCustomEx),
 		"EncodeStringSimple":                       reflect.ValueOf(tk.EncodeStringSimple),
 		"EncodeStringUnderline":                    reflect.ValueOf(tk.EncodeStringUnderline),
+		"EncodeToBase64":                           reflect.ValueOf(tk.EncodeToBase64),
 		"EncodeToXMLString":                        reflect.ValueOf(tk.EncodeToXMLString),
 		"EncryptDataByTXDEE":                       reflect.ValueOf(tk.EncryptDataByTXDEE),
 		"EncryptDataByTXDEF":                       reflect.ValueOf(tk.EncryptDataByTXDEF),
@@ -129,6 +133,7 @@ func init() {
 		"GenerateJSONPResponseWith2Object":         reflect.ValueOf(tk.GenerateJSONPResponseWith2Object),
 		"GenerateJSONPResponseWith3Object":         reflect.ValueOf(tk.GenerateJSONPResponseWith3Object),
 		"GenerateJSONPResponseWithObject":          reflect.ValueOf(tk.GenerateJSONPResponseWithObject),
+		"GenerateRandomFloats":                     reflect.ValueOf(tk.GenerateRandomFloats),
 		"GenerateRandomString":                     reflect.ValueOf(tk.GenerateRandomString),
 		"GetAllOSParameters":                       reflect.ValueOf(tk.GetAllOSParameters),
 		"GetAllParameters":                         reflect.ValueOf(tk.GetAllParameters),
@@ -136,6 +141,8 @@ func init() {
 		"GetApplicationPath":                       reflect.ValueOf(tk.GetApplicationPath),
 		"GetAvailableFileName":                     reflect.ValueOf(tk.GetAvailableFileName),
 		"GetClipText":                              reflect.ValueOf(tk.GetClipText),
+		"GetClipboardTextDefaultEmpty":             reflect.ValueOf(tk.GetClipboardTextDefaultEmpty),
+		"GetClipboardTextWithDefault":              reflect.ValueOf(tk.GetClipboardTextWithDefault),
 		"GetCurrentDir":                            reflect.ValueOf(tk.GetCurrentDir),
 		"GetCurrentThreadID":                       reflect.ValueOf(tk.GetCurrentThreadID),
 		"GetDBConnection":                          reflect.ValueOf(tk.GetDBConnection),
@@ -193,6 +200,7 @@ func init() {
 		"GetSwitchWithDefaultInt64Value":           reflect.ValueOf(tk.GetSwitchWithDefaultInt64Value),
 		"GetSwitchWithDefaultIntValue":             reflect.ValueOf(tk.GetSwitchWithDefaultIntValue),
 		"GetSwitchWithDefaultValue":                reflect.ValueOf(tk.GetSwitchWithDefaultValue),
+		"GetTextFromFileOrClipboard":               reflect.ValueOf(tk.GetTextFromFileOrClipboard),
 		"GetTimeFromUnixTimeStamp":                 reflect.ValueOf(tk.GetTimeFromUnixTimeStamp),
 		"GetTimeFromUnixTimeStampMid":              reflect.ValueOf(tk.GetTimeFromUnixTimeStampMid),
 		"GetTimeStamp":                             reflect.ValueOf(tk.GetTimeStamp),
@@ -225,6 +233,7 @@ func init() {
 		"IsFloat64NearlyEqual":                     reflect.ValueOf(tk.IsFloat64NearlyEqual),
 		"IsValidEmail":                             reflect.ValueOf(tk.IsValidEmail),
 		"IsYesterday":                              reflect.ValueOf(tk.IsYesterday),
+		"JSONToMapStringFloat64Array":              reflect.ValueOf(tk.JSONToMapStringFloat64Array),
 		"JSONToMapStringString":                    reflect.ValueOf(tk.JSONToMapStringString),
 		"JSONToObject":                             reflect.ValueOf(tk.JSONToObject),
 		"JSONToObjectE":                            reflect.ValueOf(tk.JSONToObjectE),
@@ -240,6 +249,8 @@ func init() {
 		"LoadBytesFromFileE":                       reflect.ValueOf(tk.LoadBytesFromFileE),
 		"LoadDualLineList":                         reflect.ValueOf(tk.LoadDualLineList),
 		"LoadDualLineListFromString":               reflect.ValueOf(tk.LoadDualLineListFromString),
+		"LoadJSONMapStringFloat64ArrayFromFile":    reflect.ValueOf(tk.LoadJSONMapStringFloat64ArrayFromFile),
+		"LoadMSSFromJSONFile":                      reflect.ValueOf(tk.LoadMSSFromJSONFile),
 		"LoadSimpleMapFromDir":                     reflect.ValueOf(tk.LoadSimpleMapFromDir),
 		"LoadSimpleMapFromFile":                    reflect.ValueOf(tk.LoadSimpleMapFromFile),
 		"LoadSimpleMapFromFileE":                   reflect.ValueOf(tk.LoadSimpleMapFromFileE),
@@ -250,12 +261,16 @@ func init() {
 		"LoadStringFromFileE":                      reflect.ValueOf(tk.LoadStringFromFileE),
 		"LoadStringFromFileWithDefault":            reflect.ValueOf(tk.LoadStringFromFileWithDefault),
 		"LoadStringList":                           reflect.ValueOf(tk.LoadStringList),
+		"LoadStringListAsMap":                      reflect.ValueOf(tk.LoadStringListAsMap),
+		"LoadStringListAsMapRemoveEmpty":           reflect.ValueOf(tk.LoadStringListAsMapRemoveEmpty),
 		"LoadStringListBuffered":                   reflect.ValueOf(tk.LoadStringListBuffered),
 		"LoadStringListFromFile":                   reflect.ValueOf(tk.LoadStringListFromFile),
+		"LoadStringListRemoveEmpty":                reflect.ValueOf(tk.LoadStringListRemoveEmpty),
 		"LoadStringTX":                             reflect.ValueOf(tk.LoadStringTX),
 		"LogWithTime":                              reflect.ValueOf(tk.LogWithTime),
 		"LogWithTimeCompact":                       reflect.ValueOf(tk.LogWithTimeCompact),
 		"MD5Encrypt":                               reflect.ValueOf(tk.MD5Encrypt),
+		"MSSFromJSON":                              reflect.ValueOf(tk.MSSFromJSON),
 		"NewRandomGenerator":                       reflect.ValueOf(tk.NewRandomGenerator),
 		"NewSSHClient":                             reflect.ValueOf(tk.NewSSHClient),
 		"NowToFileName":                            reflect.ValueOf(tk.NowToFileName),
@@ -319,6 +334,7 @@ func init() {
 		"SafelyGetIntForKeyWithDefault":            reflect.ValueOf(tk.SafelyGetIntForKeyWithDefault),
 		"SafelyGetStringForKeyWithDefault":         reflect.ValueOf(tk.SafelyGetStringForKeyWithDefault),
 		"SaveDualLineList":                         reflect.ValueOf(tk.SaveDualLineList),
+		"SaveMSSToJSONFile":                        reflect.ValueOf(tk.SaveMSSToJSONFile),
 		"SaveSimpleMapToFile":                      reflect.ValueOf(tk.SaveSimpleMapToFile),
 		"SaveStringList":                           reflect.ValueOf(tk.SaveStringList),
 		"SaveStringListBuffered":                   reflect.ValueOf(tk.SaveStringListBuffered),
@@ -359,7 +375,7 @@ func init() {
 		"StringReplace":                            reflect.ValueOf(tk.StringReplace),
 		"SumBytes":                                 reflect.ValueOf(tk.SumBytes),
 		"SystemCmd":                                reflect.ValueOf(tk.SystemCmd),
-		"TXDEF_BUFFER_LEN":                         reflect.ValueOf(tk.TXDEF_BUFFER_LEN),
+		"TXDEF_BUFFER_LEN":                         reflect.ValueOf(constant.MakeFromLiteral("1000", token.INT, 0)),
 		"TXResultFromString":                       reflect.ValueOf(tk.TXResultFromString),
 		"TXResultFromStringE":                      reflect.ValueOf(tk.TXResultFromStringE),
 		"TimeFormat":                               reflect.ValueOf(&tk.TimeFormat).Elem(),
@@ -379,9 +395,6 @@ func init() {
 		"UrlDecode":                                reflect.ValueOf(tk.UrlDecode),
 		"UrlEncode":                                reflect.ValueOf(tk.UrlEncode),
 		"UrlEncode2":                               reflect.ValueOf(tk.UrlEncode2),
-		"MSSFromJSON":                              reflect.ValueOf(tk.MSSFromJSON),
-		"LoadMSSFromJSONFile":                      reflect.ValueOf(tk.LoadMSSFromJSONFile),
-		"SaveMSSToJSONFile":                        reflect.ValueOf(tk.SaveMSSToJSONFile),
 
 		// type definitions
 		"ExitCallback":  reflect.ValueOf((*tk.ExitCallback)(nil)),
