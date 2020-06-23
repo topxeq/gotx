@@ -46,15 +46,12 @@ import (
 	// "github.com/beevik/etree"
 
 	// GUI related start
-	"github.com/sqweek/dialog"
+
 	// GUI related end
 
 	"github.com/topxeq/tk"
-
 	// GUI related start
-	"github.com/AllenDang/giu"
 	// g "github.com/AllenDang/giu"
-	"github.com/AllenDang/giu/imgui"
 	// GUI related end
 )
 
@@ -124,6 +121,23 @@ func ygEval(strA string) string {
 
 func panicIt(valueA interface{}) {
 	panic(valueA)
+}
+
+func runScriptX(codeA string, argsA ...string) interface{} {
+
+	initYGVM()
+
+	_, errT := ygVMG.Eval(codeA)
+	if errT != nil {
+		tk.Pl("failed to run script(%v): %v", codeA, errT)
+
+		if p, ok := errT.(interp.Panic); ok {
+			tk.Pl("%v", string(p.Stack))
+		}
+
+	}
+
+	return errT
 }
 
 func runScript(codeA string, modeA string, argsA ...string) interface{} {
@@ -342,440 +356,329 @@ func runInteractive() int {
 
 // full version related start
 
-var specialCharsG = "ɪɔː辑ˌɡɜɔŋæʌʃɛəʒɪɑɒθʊː"
+// var (
+// 	editorG            imgui.TextEditor
+// 	errMarkersG        imgui.ErrorMarkers
+// 	editFileNameG      string
+// 	editFileCleanFlagG string
+// 	editSecureCodeG    string
+// 	editArgsG          string
+// )
 
-func loadFont() {
-	fonts := giu.Context.IO().Fonts()
+// func editorLoad() {
+// 	if editorG.IsTextChanged() {
+// 		editFileCleanFlagG = "*"
+// 	}
 
-	rangeVarT := tk.GetVar("FontRange")
+// 	if editFileCleanFlagG != "" {
+// 		rs := getConfirmGUI("Please confirm", "File modified, load another file anyway?")
 
-	ranges := imgui.NewGlyphRanges()
+// 		if rs == false {
+// 			return
+// 		}
+// 	}
 
-	builder := imgui.NewFontGlyphRangesBuilder()
+// 	fileNameNewT := selectFileGUI("Select the file to open...", "All files", "*")
 
-	if rangeVarT == nil {
-		builder.AddRanges(fonts.GlyphRangesDefault())
-	} else {
-		rangeStrT := rangeVarT.(string)
-		if rangeStrT == "" {
-			builder.AddRanges(fonts.GlyphRangesChineseSimplifiedCommon())
-			builder.AddText(specialCharsG)
-		} else if tk.StartsWith(rangeStrT, "COMMON") {
-			builder.AddRanges(fonts.GlyphRangesChineseSimplifiedCommon())
-			builder.AddText(specialCharsG + rangeStrT[6:])
-		} else if rangeStrT == "FULL" {
-			builder.AddRanges(fonts.GlyphRangesChineseFull())
-			builder.AddText(specialCharsG)
-		} else {
-			builder.AddText(rangeStrT)
-		}
-	}
+// 	if tk.IsErrorString(fileNameNewT) {
+// 		if tk.EndsWith(fileNameNewT, "Cancelled") {
+// 			giu.Msgbox("Info", tk.Spr("Action cancelled by user"))
+// 			return
+// 		}
 
-	builder.BuildRanges(ranges)
+// 		giu.Msgbox("Error", tk.Spr("Failed to select file: %v", tk.GetErrorString(fileNameNewT)))
+// 		return
+// 	}
 
-	fontPath := "c:/Windows/Fonts/simhei.ttf"
+// 	fcT := tk.LoadStringFromFile(fileNameNewT)
 
-	if tk.Contains(tk.GetOSName(), "rwin") {
-		fontPath = "/Library/Fonts/Microsoft/SimHei.ttf"
-	}
+// 	if tk.IsErrorString(fcT) {
+// 		giu.Msgbox("Error", tk.Spr("Failed to load file content: %v", tk.GetErrorString(fileNameNewT)))
+// 		return
+// 	}
 
-	fontVarT := tk.GetVar("Font") // "c:/Windows/Fonts/simsun.ttc"
+// 	editFileNameG = fileNameNewT
+// 	editorG.SetText(fcT)
+// 	editFileCleanFlagG = ""
 
-	if fontVarT != nil {
-		fontPath = fontVarT.(string)
-	}
+// }
 
-	fontSizeStrT := "16"
+// func editorSaveAs() {
+// 	fileNameNewT := selectFileToSaveGUI("Select the file to save...", "All file", "*")
 
-	fontSizeVarT := tk.GetVar("FontSize")
+// 	if tk.IsErrorString(fileNameNewT) {
+// 		if tk.EndsWith(fileNameNewT, "Cancelled") {
+// 			giu.Msgbox("Info", tk.Spr("Action cancelled by user"))
+// 			return
+// 		}
 
-	if fontSizeVarT != nil {
-		fontSizeStrT = fontSizeVarT.(string)
-	}
+// 		giu.Msgbox("Error", tk.Spr("Failed to select file: %v", tk.GetErrorString(fileNameNewT)))
+// 		return
+// 	}
 
-	fontSizeT := tk.StrToIntWithDefaultValue(fontSizeStrT, 16)
+// 	editFileNameG = fileNameNewT
 
-	// fonts.AddFontFromFileTTF(fontPath, 14)
-	fonts.AddFontFromFileTTFV(fontPath, float32(fontSizeT), imgui.DefaultFontConfig, ranges.Data())
-}
+// 	rs := true
+// 	// if tk.IfFileExists(editFileNameG) {
+// 	// 	rs = getConfirmGUI("请再次确认", "文件已存在，是否覆盖?")
+// 	// }
 
-// full version related end
+// 	if rs == true {
+// 		rs1 := tk.SaveStringToFile(editorG.GetText(), editFileNameG)
 
-// full version related start
+// 		if rs1 != "" {
+// 			giu.Msgbox("Error", tk.Spr("Failed to save: %v", rs))
+// 			return
+// 		}
 
-var vgInch = float64(vg.Inch)
+// 		giu.Msgbox("Info", tk.Spr("File saved to: %v", editFileNameG))
 
-// full version related end
+// 		editFileCleanFlagG = ""
+// 	}
 
-// full version related start
-func getConfirmGUI(titleA string, messageA string) bool {
-	return dialog.Message("%v", messageA).Title(titleA).YesNo()
-}
+// }
 
-func simpleInfo(titleA string, messageA string) {
-	dialog.Message("%v", messageA).Title(titleA).Info()
-}
+// func editorSave() {
+// 	if editFileNameG == "" {
+// 		editorSaveAs()
 
-func simpleError(titleA string, messageA string) {
-	dialog.Message("%v", messageA).Title(titleA).Error()
-}
+// 		return
+// 	}
 
-// filename, err := dialog.File().Filter("XML files", "xml").Title("Export to XML").Save()
-func selectFileToSaveGUI(titleA string, filterNameA string, filterTypeA string) string {
-	fileNameT, errT := dialog.File().Filter(filterNameA, filterTypeA).Title(titleA).Save()
+// 	rs := false
 
-	if errT != nil {
-		return tk.GenerateErrorStringF("failed: %v", errT)
-	}
+// 	if tk.IfFileExists(editFileNameG) {
+// 		rs = getConfirmGUI("Please confirm", "The file already exists, confirm to overwrite?")
+// 	}
 
-	return fileNameT
-}
+// 	if rs == true {
+// 		rs1 := tk.SaveStringToFile(editorG.GetText(), editFileNameG)
 
-// fileNameT, errT := dialog.File().Filter("Mp3 audio file", "mp3").Load()
-func selectFileGUI(titleA string, filterNameA string, filterTypeA string) string {
-	fileNameT, errT := dialog.File().Filter(filterNameA, filterTypeA).Title(titleA).Load()
+// 		if rs1 != "" {
+// 			giu.Msgbox("Error", tk.Spr("Failed to save: %v", rs))
+// 			return
+// 		}
 
-	if errT != nil {
-		return tk.GenerateErrorStringF("failed: %v", errT)
-	}
+// 		giu.Msgbox("Info", tk.Spr("File saved to file: %v", editFileNameG))
 
-	return fileNameT
-}
+// 		editFileCleanFlagG = ""
+// 	}
 
-// directory, err := dialog.Directory().Title("Load images").Browse()
-func selectDirectoryGUI(titleA string) string {
-	directoryT, errT := dialog.Directory().Title(titleA).Browse()
+// }
 
-	if errT != nil {
-		return tk.GenerateErrorStringF("failed: %v", errT)
-	}
+// func editEncrypt() {
+// 	imgui.CloseCurrentPopup()
 
-	return directoryT
-}
+// 	sourceT := editorG.GetText()
 
-var (
-	editorG            imgui.TextEditor
-	errMarkersG        imgui.ErrorMarkers
-	editFileNameG      string
-	editFileCleanFlagG string
-	editSecureCodeG    string
-	editArgsG          string
-)
+// 	encStrT := tk.EncryptStringByTXDEF(sourceT, editSecureCodeG)
 
-func editorLoad() {
-	if editorG.IsTextChanged() {
-		editFileCleanFlagG = "*"
-	}
+// 	if tk.IsErrorString(encStrT) {
+// 		simpleError("Error", tk.Spr("failed to encrypt content: %v", tk.GetErrorString(encStrT)))
+// 		return
+// 	}
 
-	if editFileCleanFlagG != "" {
-		rs := getConfirmGUI("Please confirm", "File modified, load another file anyway?")
+// 	editorG.SetText("//TXDEF#" + encStrT)
+// 	editFileCleanFlagG = "*"
 
-		if rs == false {
-			return
-		}
-	}
+// 	editSecureCodeG = ""
+// }
 
-	fileNameNewT := selectFileGUI("Select the file to open...", "All files", "*")
+// func editEncryptClick() {
+// 	giu.OpenPopup("Please enter:##EncryptInputSecureCode")
+// }
 
-	if tk.IsErrorString(fileNameNewT) {
-		if tk.EndsWith(fileNameNewT, "Cancelled") {
-			giu.Msgbox("Info", tk.Spr("Action cancelled by user"))
-			return
-		}
+// func editDecrypt() {
+// 	imgui.CloseCurrentPopup()
 
-		giu.Msgbox("Error", tk.Spr("Failed to select file: %v", tk.GetErrorString(fileNameNewT)))
-		return
-	}
+// 	sourceT := tk.Trim(editorG.GetText())
 
-	fcT := tk.LoadStringFromFile(fileNameNewT)
+// 	encStrT := tk.DecryptStringByTXDEF(sourceT, editSecureCodeG)
 
-	if tk.IsErrorString(fcT) {
-		giu.Msgbox("Error", tk.Spr("Failed to load file content: %v", tk.GetErrorString(fileNameNewT)))
-		return
-	}
+// 	if tk.IsErrorString(encStrT) {
+// 		simpleError("Error", tk.Spr("failed to decrypt content: %v", tk.GetErrorString(encStrT)))
+// 		return
+// 	}
 
-	editFileNameG = fileNameNewT
-	editorG.SetText(fcT)
-	editFileCleanFlagG = ""
-
-}
-
-func editorSaveAs() {
-	fileNameNewT := selectFileToSaveGUI("Select the file to save...", "All file", "*")
-
-	if tk.IsErrorString(fileNameNewT) {
-		if tk.EndsWith(fileNameNewT, "Cancelled") {
-			giu.Msgbox("Info", tk.Spr("Action cancelled by user"))
-			return
-		}
-
-		giu.Msgbox("Error", tk.Spr("Failed to select file: %v", tk.GetErrorString(fileNameNewT)))
-		return
-	}
-
-	editFileNameG = fileNameNewT
-
-	rs := true
-	// if tk.IfFileExists(editFileNameG) {
-	// 	rs = getConfirmGUI("请再次确认", "文件已存在，是否覆盖?")
-	// }
-
-	if rs == true {
-		rs1 := tk.SaveStringToFile(editorG.GetText(), editFileNameG)
-
-		if rs1 != "" {
-			giu.Msgbox("Error", tk.Spr("Failed to save: %v", rs))
-			return
-		}
-
-		giu.Msgbox("Info", tk.Spr("File saved to: %v", editFileNameG))
-
-		editFileCleanFlagG = ""
-	}
-
-}
-
-func editorSave() {
-	if editFileNameG == "" {
-		editorSaveAs()
-
-		return
-	}
-
-	rs := false
-
-	if tk.IfFileExists(editFileNameG) {
-		rs = getConfirmGUI("Please confirm", "The file already exists, confirm to overwrite?")
-	}
-
-	if rs == true {
-		rs1 := tk.SaveStringToFile(editorG.GetText(), editFileNameG)
-
-		if rs1 != "" {
-			giu.Msgbox("Error", tk.Spr("Failed to save: %v", rs))
-			return
-		}
-
-		giu.Msgbox("Info", tk.Spr("File saved to file: %v", editFileNameG))
-
-		editFileCleanFlagG = ""
-	}
-
-}
-
-func editEncrypt() {
-	imgui.CloseCurrentPopup()
-
-	sourceT := editorG.GetText()
-
-	encStrT := tk.EncryptStringByTXDEF(sourceT, editSecureCodeG)
-
-	if tk.IsErrorString(encStrT) {
-		simpleError("Error", tk.Spr("failed to encrypt content: %v", tk.GetErrorString(encStrT)))
-		return
-	}
-
-	editorG.SetText("//TXDEF#" + encStrT)
-	editFileCleanFlagG = "*"
-
-	editSecureCodeG = ""
-}
-
-func editEncryptClick() {
-	giu.OpenPopup("Please enter:##EncryptInputSecureCode")
-}
-
-func editDecrypt() {
-	imgui.CloseCurrentPopup()
-
-	sourceT := tk.Trim(editorG.GetText())
-
-	encStrT := tk.DecryptStringByTXDEF(sourceT, editSecureCodeG)
-
-	if tk.IsErrorString(encStrT) {
-		simpleError("Error", tk.Spr("failed to decrypt content: %v", tk.GetErrorString(encStrT)))
-		return
-	}
-
-	editorG.SetText(encStrT)
-	editFileCleanFlagG = "*"
-	editSecureCodeG = ""
-
-}
-
-func editDecryptClick() {
-	giu.OpenPopup("Please enter:##DecryptInputSecureCode")
-}
-
-func editRun() {
-	imgui.CloseCurrentPopup()
-
-	runScript(editorG.GetText(), "", editArgsG)
-}
-
-func editRunClick() {
-	giu.OpenPopup("Please enter:##RunInputArgs")
-}
-
-func onButtonCloseClick() {
-	os.Exit(0)
-}
-
-func loopWindow(windowA *giu.MasterWindow, loopA func()) {
-	// wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
-
-	windowA.Main(loopA)
-
-}
-
-func editorLoop() {
-	giu.SingleWindow("Gotx Editor", giu.Layout{
-		giu.Label(editFileNameG + editFileCleanFlagG),
-		giu.Dummy(30, 0),
-		giu.Line(
-			giu.Button("Load", editorLoad),
-			giu.Button("Save", editorSave),
-			giu.Button("Save As...", editorSaveAs),
-			giu.Button("Check", func() {
-
-				// sourceT := editorG.GetText()
-
-				// parser.EnableErrorVerbose()
-				// _, errT := parser.ParseSrc(sourceT)
-				// // tk.Plv(stmts)
-
-				// e, ok := errT.(*parser.Error)
-
-				// if ok {
-				// 	errMarkersG.Clear()
-				// 	errMarkersG.Insert(e.Pos.Line, tk.Spr("[col: %v, size: %v] %v", e.Pos.Column, errMarkersG.Size(), e.Error()))
-
-				// 	editorG.SetErrorMarkers(errMarkersG)
-
-				// } else if errT != nil {
-				// 	giu.Msgbox("Error", tk.Spr("%#v", errT))
-				// } else {
-				// 	giu.Msgbox("Info", "Syntax check passed.")
-				// }
-
-			}),
-			giu.Button("Encrypt", editEncryptClick),
-			giu.Button("Decrypt", editDecryptClick),
-			giu.Button("Run", editRunClick),
-			giu.Button("Close", onButtonCloseClick),
-			// giu.Button("Get Text", func() {
-			// 	if editorG.HasSelection() {
-			// 		fmt.Println(editorG.GetSelectedText())
-			// 	} else {
-			// 		fmt.Println(editorG.GetText())
-			// 	}
-
-			// 	column, line := editorG.GetCursorPos()
-			// 	fmt.Println("Cursor pos:", column, line)
-
-			// 	column, line = editorG.GetSelectionStart()
-			// 	fmt.Println("Selection start:", column, line)
-
-			// 	fmt.Println("Current line is", editorG.GetCurrentLineText())
-			// }),
-			// giu.Button("Set Text", func() {
-			// 	editorG.SetText("Set text")
-			// 	editFileNameG = "Set text"
-			// }),
-			// giu.Button("Set Error Marker", func() {
-			// 	errMarkersG.Clear()
-			// 	errMarkersG.Insert(1, "Error message")
-			// 	fmt.Println("ErrMarkers Size:", errMarkersG.Size())
-
-			// 	editorG.SetErrorMarkers(errMarkersG)
-			// }),
-		),
-		giu.PopupModal("Please enter:##EncryptInputSecureCode", giu.Layout{
-			giu.Line(
-				giu.Label("Secure code"),
-				giu.InputTextV("", 40, &editSecureCodeG, giu.InputTextFlagsPassword, nil, nil),
-			),
-			giu.Line(
-				giu.Button("Ok", editEncrypt),
-				giu.Button("Cancel", func() { imgui.CloseCurrentPopup() }),
-			),
-		}),
-		giu.PopupModal("Please enter:##DecryptInputSecureCode", giu.Layout{
-			giu.Line(
-				giu.Label("Secure code"),
-				giu.InputTextV("", 40, &editSecureCodeG, giu.InputTextFlagsPassword, nil, nil),
-			),
-			giu.Line(
-				giu.Button("Ok", editDecrypt),
-				giu.Button("Cancel", func() { imgui.CloseCurrentPopup() }),
-			),
-		}),
-		giu.PopupModal("Please enter:##RunInputArgs", giu.Layout{
-			giu.Line(
-				giu.Label("Arguments to pass to VM"),
-				giu.InputText("", 80, &editArgsG),
-			),
-			giu.Line(
-				giu.Button("Ok", editRun),
-				giu.Button("Cancel", func() { imgui.CloseCurrentPopup() }),
-			),
-		}),
-		giu.Custom(func() {
-			editorG.Render("Hello", imgui.Vec2{X: 0, Y: 0}, true)
-			if giu.IsItemHovered() {
-				if editorG.IsTextChanged() {
-					editFileCleanFlagG = "*"
-				}
-			}
-		}),
-		giu.PrepareMsgbox(),
-	})
-}
-
-func editFile(fileNameA string) {
-	var fcT string
-
-	if fileNameA == "" {
-		editFileNameG = ""
-
-		fcT = ""
-
-		editFileCleanFlagG = "*"
-	} else {
-		editFileNameG = fileNameA
-
-		fcT = tk.LoadStringFromFile(editFileNameG)
-
-		if tk.IsErrorString(fcT) {
-			tk.Pl("failed to load file %v: %v", editFileNameG, tk.GetErrorString(fcT))
-			return
-
-		}
-
-		editFileCleanFlagG = ""
-
-	}
-
-	errMarkersG = imgui.NewErrorMarkers()
-
-	editorG = imgui.NewTextEditor()
-
-	editorG.SetShowWhitespaces(false)
-	editorG.SetTabSize(2)
-	editorG.SetText(fcT)
-	editorG.SetLanguageDefinitionC()
-
-	// setVar("Font", "c:/Windows/Fonts/simsun.ttc")
-	tk.SetVar("FontRange", "COMMON")
-	tk.SetVar("FontSize", "15")
-
-	tk.SetVar("Font", "c:/Windows/Fonts/simhei.ttf")
-
-	wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
-	// tk.Pl("%T", wnd)
-	wnd.Main(editorLoop)
-
-}
+// 	editorG.SetText(encStrT)
+// 	editFileCleanFlagG = "*"
+// 	editSecureCodeG = ""
+
+// }
+
+// func editDecryptClick() {
+// 	giu.OpenPopup("Please enter:##DecryptInputSecureCode")
+// }
+
+// func editRun() {
+// 	imgui.CloseCurrentPopup()
+
+// 	runScript(editorG.GetText(), "", editArgsG)
+// }
+
+// func editRunClick() {
+// 	giu.OpenPopup("Please enter:##RunInputArgs")
+// }
+
+// func onButtonCloseClick() {
+// 	os.Exit(0)
+// }
+
+// func loopWindow(windowA *giu.MasterWindow, loopA func()) {
+// 	// wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
+
+// 	windowA.Main(loopA)
+
+// }
+
+// func editorLoop() {
+// 	giu.SingleWindow("Gotx Editor", giu.Layout{
+// 		giu.Label(editFileNameG + editFileCleanFlagG),
+// 		giu.Dummy(30, 0),
+// 		giu.Line(
+// 			giu.Button("Load", editorLoad),
+// 			giu.Button("Save", editorSave),
+// 			giu.Button("Save As...", editorSaveAs),
+// 			giu.Button("Check", func() {
+
+// 				// sourceT := editorG.GetText()
+
+// 				// parser.EnableErrorVerbose()
+// 				// _, errT := parser.ParseSrc(sourceT)
+// 				// // tk.Plv(stmts)
+
+// 				// e, ok := errT.(*parser.Error)
+
+// 				// if ok {
+// 				// 	errMarkersG.Clear()
+// 				// 	errMarkersG.Insert(e.Pos.Line, tk.Spr("[col: %v, size: %v] %v", e.Pos.Column, errMarkersG.Size(), e.Error()))
+
+// 				// 	editorG.SetErrorMarkers(errMarkersG)
+
+// 				// } else if errT != nil {
+// 				// 	giu.Msgbox("Error", tk.Spr("%#v", errT))
+// 				// } else {
+// 				// 	giu.Msgbox("Info", "Syntax check passed.")
+// 				// }
+
+// 			}),
+// 			giu.Button("Encrypt", editEncryptClick),
+// 			giu.Button("Decrypt", editDecryptClick),
+// 			giu.Button("Run", editRunClick),
+// 			giu.Button("Close", onButtonCloseClick),
+// 			// giu.Button("Get Text", func() {
+// 			// 	if editorG.HasSelection() {
+// 			// 		fmt.Println(editorG.GetSelectedText())
+// 			// 	} else {
+// 			// 		fmt.Println(editorG.GetText())
+// 			// 	}
+
+// 			// 	column, line := editorG.GetCursorPos()
+// 			// 	fmt.Println("Cursor pos:", column, line)
+
+// 			// 	column, line = editorG.GetSelectionStart()
+// 			// 	fmt.Println("Selection start:", column, line)
+
+// 			// 	fmt.Println("Current line is", editorG.GetCurrentLineText())
+// 			// }),
+// 			// giu.Button("Set Text", func() {
+// 			// 	editorG.SetText("Set text")
+// 			// 	editFileNameG = "Set text"
+// 			// }),
+// 			// giu.Button("Set Error Marker", func() {
+// 			// 	errMarkersG.Clear()
+// 			// 	errMarkersG.Insert(1, "Error message")
+// 			// 	fmt.Println("ErrMarkers Size:", errMarkersG.Size())
+
+// 			// 	editorG.SetErrorMarkers(errMarkersG)
+// 			// }),
+// 		),
+// 		giu.PopupModal("Please enter:##EncryptInputSecureCode", giu.Layout{
+// 			giu.Line(
+// 				giu.Label("Secure code"),
+// 				giu.InputTextV("", 40, &editSecureCodeG, giu.InputTextFlagsPassword, nil, nil),
+// 			),
+// 			giu.Line(
+// 				giu.Button("Ok", editEncrypt),
+// 				giu.Button("Cancel", func() { imgui.CloseCurrentPopup() }),
+// 			),
+// 		}),
+// 		giu.PopupModal("Please enter:##DecryptInputSecureCode", giu.Layout{
+// 			giu.Line(
+// 				giu.Label("Secure code"),
+// 				giu.InputTextV("", 40, &editSecureCodeG, giu.InputTextFlagsPassword, nil, nil),
+// 			),
+// 			giu.Line(
+// 				giu.Button("Ok", editDecrypt),
+// 				giu.Button("Cancel", func() { imgui.CloseCurrentPopup() }),
+// 			),
+// 		}),
+// 		giu.PopupModal("Please enter:##RunInputArgs", giu.Layout{
+// 			giu.Line(
+// 				giu.Label("Arguments to pass to VM"),
+// 				giu.InputText("", 80, &editArgsG),
+// 			),
+// 			giu.Line(
+// 				giu.Button("Ok", editRun),
+// 				giu.Button("Cancel", func() { imgui.CloseCurrentPopup() }),
+// 			),
+// 		}),
+// 		giu.Custom(func() {
+// 			editorG.Render("Hello", imgui.Vec2{X: 0, Y: 0}, true)
+// 			if giu.IsItemHovered() {
+// 				if editorG.IsTextChanged() {
+// 					editFileCleanFlagG = "*"
+// 				}
+// 			}
+// 		}),
+// 		giu.PrepareMsgbox(),
+// 	})
+// }
+
+// func editFile(fileNameA string) {
+// 	var fcT string
+
+// 	if fileNameA == "" {
+// 		editFileNameG = ""
+
+// 		fcT = ""
+
+// 		editFileCleanFlagG = "*"
+// 	} else {
+// 		editFileNameG = fileNameA
+
+// 		fcT = tk.LoadStringFromFile(editFileNameG)
+
+// 		if tk.IsErrorString(fcT) {
+// 			tk.Pl("failed to load file %v: %v", editFileNameG, tk.GetErrorString(fcT))
+// 			return
+
+// 		}
+
+// 		editFileCleanFlagG = ""
+
+// 	}
+
+// 	errMarkersG = imgui.NewErrorMarkers()
+
+// 	editorG = imgui.NewTextEditor()
+
+// 	editorG.SetShowWhitespaces(false)
+// 	editorG.SetTabSize(2)
+// 	editorG.SetText(fcT)
+// 	editorG.SetLanguageDefinitionC()
+
+// 	// setVar("Font", "c:/Windows/Fonts/simsun.ttc")
+// 	tk.SetVar("FontRange", "COMMON")
+// 	tk.SetVar("FontSize", "15")
+
+// 	tk.SetVar("Font", "c:/Windows/Fonts/simhei.ttf")
+
+// 	wnd := giu.NewMasterWindow("Gotx Editor", 800, 600, 0, loadFont)
+// 	// tk.Pl("%T", wnd)
+// 	wnd.Main(editorLoop)
+
+// }
 
 // full version related end
 
@@ -787,22 +690,22 @@ func runFile(argsA ...string) interface{} {
 	// full version related start
 	// GUI related start
 
-	if lenT < 1 {
-		rs := selectFileGUI("Please select file to run...", "All files", "*")
+	// if lenT < 1 {
+	// 	rs := selectFileGUI("Please select file to run...", "All files", "*")
 
-		if tk.IsErrorString(rs) {
-			return tk.Errf("Failed to load file: %v", tk.GetErrorString(rs))
-		}
+	// 	if tk.IsErrorString(rs) {
+	// 		return tk.Errf("Failed to load file: %v", tk.GetErrorString(rs))
+	// 	}
 
-		fcT := tk.LoadStringFromFile(rs)
+	// 	fcT := tk.LoadStringFromFile(rs)
 
-		if tk.IsErrorString(fcT) {
-			return tk.Errf("Invalid file content: %v", tk.GetErrorString(fcT))
-		}
+	// 	if tk.IsErrorString(fcT) {
+	// 		return tk.Errf("Invalid file content: %v", tk.GetErrorString(fcT))
+	// 	}
 
-		return runScript(fcT, "")
+	// 	return runScript(fcT, "")
 
-	}
+	// }
 	// GUI related end
 	// full version related end
 
@@ -940,6 +843,752 @@ func getCfgString(fileNameA string) string {
 	return tk.ErrStrF("failed to get config string")
 }
 
+var editFileScriptG = `
+package main
+
+import (
+	"os"
+	"runtime"
+
+	"github.com/sciter-sdk/go-sciter"
+	"github.com/sciter-sdk/go-sciter/window"
+	"github.com/topxeq/tk"
+)
+
+func main() {
+	htmlT := ` + "`" + `
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<title>Gox Editor</title>
+		<style>
+		
+		plaintext {
+		  padding:0;
+		  flow:vertical;
+		  behavior:plaintext;
+		  background:#333; border:1px solid #333;
+		  color:white;
+		  overflow:scroll-indicator;
+		  font-rendering-mode:snap-pixel;
+		  size:*; 
+		  tab-size: 4;
+		}
+		plaintext > text {
+		  font-family:monospace;
+		  white-space: pre-wrap;
+		  background:white;
+		  color:black;
+		  margin-left: 3em;
+		  padding-left: 4dip;
+		  cursor:text;
+		  display:list-item;
+		  list-style-type: index;
+		  list-marker-color:#aaa;
+		}
+		plaintext > text:last-child {
+		  padding-bottom:*;
+		}    
+		
+		plaintext > text:nth-child(10n) {
+		  list-marker-color:#fff;
+		}
+		
+		
+		</style>
+	
+	
+		<script type="text/tiscript">
+			function colorize() 
+			{
+				const apply = Selection.applyMark; // shortcut
+				const isEditor = this.tag == "plaintext";
+				
+				// forward declarations:
+				var doStyle;
+				var doScript;
+	
+				// markup colorizer  
+				function doMarkup(tz) 
+				{
+						var bnTagStart = null;
+						var tagScript = false;
+						var tagScriptType = false;
+						var tagStyle = false;
+						var textElement;
+					
+					while(var tt = tz.token()) {
+					if( isEditor && tz.element != textElement )       
+					{
+						textElement = tz.element;
+						textElement.attributes["type"] = "markup";
+					}
+					//stdout.println(tt,tz.attr,tz.value);
+					switch(tt) {
+						case #TAG-START: {    
+							bnTagStart = tz.tokenStart; 
+							const tag = tz.tag;
+							tagScript = tag == "script";
+							tagStyle  = tag == "style";
+						} break;
+						case #TAG-HEAD-END: {
+							apply(bnTagStart,tz.tokenEnd,"tag"); 
+							if( tagScript ) { tz.push(#source,"</sc"+"ript>"); doScript(tz, tagScriptType, true); }
+							else if( tagStyle ) { tz.push(#source,"</style>"); doStyle(tz, true); }
+						} break;
+						case #TAG-END:      apply(tz.tokenStart,tz.tokenEnd,"tag"); break;  
+						case #TAG-ATTR:     if( tagScript && tz.attr == "type") tagScriptType = tz.value; 
+											if( tz.attr == "id" ) apply(tz.tokenStart,tz.tokenEnd,"tag-id"); 
+											break;
+					}
+					}
+				}
+				
+				// script colorizer
+				doScript = function(tz, typ, embedded = false) 
+				{
+					const KEYWORDS = 
+					{
+					"type"    :true, "function":true, "var"       :true,"if"       :true,
+					"else"    :true, "while"   :true, "return"    :true,"for"      :true,
+					"break"   :true, "continue":true, "do"        :true,"switch"   :true,
+					"case"    :true, "default" :true, "null"      :true,"super"    :true,
+					"new"     :true, "try"     :true, "catch"     :true,"finally"  :true,
+					"throw"   :true, "typeof"  :true, "instanceof":true,"in"       :true,
+					"property":true, "const"   :true, "get"       :true,"set"      :true,
+					"include" :true, "like"    :true, "class"     :true,"namespace":true,
+					"this"    :true, "assert"  :true, "delete"    :true,"otherwise":true,
+					"with"    :true, "__FILE__":true, "__LINE__"  :true,"__TRACE__":true,
+					"debug"   :true, "await"   :true 
+					};
+					
+					const LITERALS = { "true": true, "false": true, "null": true, "undefined": true };
+					
+					var firstElement;
+					var lastElement;
+				
+					while:loop(var tt = tz.token()) {
+					var el = tz.element;
+					if( !firstElement ) firstElement = el;
+					lastElement = el;
+					switch(tt) 
+					{
+						case #NUMBER:       apply(tz.tokenStart,tz.tokenEnd,"number"); break; 
+						case #NUMBER-UNIT:  apply(tz.tokenStart,tz.tokenEnd,"number-unit"); break; 
+						case #STRING:       apply(tz.tokenStart,tz.tokenEnd,"string"); break;
+						case #NAME:         
+						{
+						var val = tz.value;
+						if( val[0] == '#' )
+							apply(tz.tokenStart,tz.tokenEnd, "symbol"); 
+						else if(KEYWORDS[val]) 
+							apply(tz.tokenStart,tz.tokenEnd, "keyword"); 
+						else if(LITERALS[val]) 
+							apply(tz.tokenStart,tz.tokenEnd, "literal"); 
+						break;
+						}
+						case #COMMENT:      apply(tz.tokenStart,tz.tokenEnd,"comment"); break;
+						case #END-OF-ISLAND:  
+						// got </scr ipt>
+						tz.pop(); //pop tokenizer layer
+						break loop;
+					}
+					}
+					if(isEditor && embedded) {
+					for( var el = firstElement; el; el = el.next ) {
+						el.attributes["type"] = "script";
+						if( el == lastElement )
+						break;
+					}
+					}
+				};
+				
+				doStyle = function(tz, embedded = false) 
+				{
+					const KEYWORDS = 
+					{
+					"rgb":true, "rgba":true, "url":true, 
+					"@import":true, "@media":true, "@set":true, "@const":true
+					};
+					
+					const LITERALS = { "inherit": true };
+					
+					var firstElement;
+					var lastElement;
+					
+					while:loop(var tt = tz.token()) {
+					var el = tz.element;
+					if( !firstElement ) firstElement = el;
+					lastElement = el;
+					switch(tt) 
+					{
+						case #NUMBER:       apply(tz.tokenStart,tz.tokenEnd,"number"); break; 
+						case #NUMBER-UNIT:  apply(tz.tokenStart,tz.tokenEnd,"number-unit"); break; 
+						case #STRING:       apply(tz.tokenStart,tz.tokenEnd,"string"); break;
+						case #NAME:         
+						{
+						var val = tz.value;
+						if( val[0] == '#' )
+							apply(tz.tokenStart,tz.tokenEnd, "symbol"); 
+						else if(KEYWORDS[val]) 
+							apply(tz.tokenStart,tz.tokenEnd, "keyword"); 
+						else if(LITERALS[val]) 
+							apply(tz.tokenStart,tz.tokenEnd, "literal"); 
+						break;
+						}
+						case #COMMENT:      apply(tz.tokenStart,tz.tokenEnd,"comment"); break;
+						case #END-OF-ISLAND:  
+						// got </sc ript>
+						tz.pop(); //pop tokenizer layer
+						break loop;
+					}
+					}
+					if(isEditor && embedded) {
+					for( var el = firstElement; el; el = el.next ) {
+						el.attributes["type"] = "style";
+						if( el == lastElement )
+						break;
+					}
+					}
+				};
+				
+				var me = this;
+				
+				function doIt() { 
+				
+					var typ = me.attributes["type"];
+	
+					var syntaxKind = typ like "*html" || typ like "*xml" ? #markup : #source;
+					var syntax = typ like "*css"? #style : #script;
+					
+					var tz = new Tokenizer( me, syntaxKind );
+				
+					if( syntaxKind == #markup )
+					doMarkup(tz);
+					else if( syntax == #style )
+					doStyle(tz);
+					else 
+					doScript(tz,typ);
+				}
+				
+				doIt();
+				
+				// redefine value property
+				this[#value] = property(v) {
+					get { return this.state.value; }
+					set { this.state.value = v; doIt(); }
+				};
+				
+				this.load = function(text,sourceType) 
+				{
+					this.attributes["type"] = sourceType;
+					if( !isEditor )
+					text = text.replace(/\r\n/g,"\n"); 
+					this.state.value = text; 
+					doIt();
+				};
+				
+				this.sourceType = property(v) {
+					get { return this.attributes["type"]; }
+					set { this.attributes["type"] = v; doIt(); }
+				};
+				if (isEditor)
+						this.on("change", function() {
+							this.timer(40ms,doIt);
+						});
+				
+	
+			}
+		</script>
+		<style>
+	
+			@set colorizer < std-plaintext 
+			{
+				:root { aspect: colorize; }
+				
+				text { white-space:pre;  display:list-item; list-style-type: index; list-marker-color:#aaa; }
+				/*markup*/  
+				text::mark(tag) { color: olive; } /*background-color: #f0f0fa;*/
+				text::mark(tag-id) { color: red; } /*background-color: #f0f0fa;*/
+	
+				/*source*/  
+				text::mark(number) { color: brown; }
+				text::mark(number-unit) { color: brown; }
+				text::mark(string) { color: teal; }
+				text::mark(keyword) { color: blue; }
+				text::mark(symbol) { color: brown; }
+				text::mark(literal) { color: brown; }
+				text::mark(comment) { color: green; }
+				
+				text[type=script] {  background-color: #FFFAF0; }
+				text[type=markup] {  background-color: #FFF;  }
+				text[type=style]  {  background-color: #FAFFF0; }
+			}
+	
+			plaintext[type] {
+				style-set: colorizer;
+			}
+	
+			@set element-colorizer 
+			{
+				:root { 
+					aspect: colorize; 
+					background-color: #fafaff;
+						padding:4dip;
+						border:1dip dashed #bbb;
+					}
+				
+				/*markup*/  
+				:root::mark(tag) { color: olive; } 
+				:root::mark(tag-id) { color: red; }
+	
+				/*source*/  
+				:root::mark(number) { color: brown; }
+				:root::mark(number-unit) { color: brown; }
+				:root::mark(string) { color: teal; }
+				:root::mark(keyword) { color: blue; }
+				:root::mark(symbol) { color: brown; }
+				:root::mark(literal) { color: brown; }
+				:root::mark(comment) { color: green; }
+				}
+	
+				pre[type] {
+				style-set: element-colorizer;
+			}
+	
+		</style>
+		<script type="text/tiscript">
+			// if (view.connectToInspector) {
+			//	 view.connectToInspector(rootElement, inspectorIpAddress);
+			// }
+	
+			//stdout.println("__FOLDER__:", __FOLDER__);
+			//stdout.println("__FILE__:", __FILE__);
+	
+			function isErrStr(strA) {
+				if (strA.substr(0, 6) == "TXERROR:") {
+					return true;
+				}
+	
+				return false;
+			}
+	
+			function getErrStr(strA) {
+				if (strA.substr(0, 6) == "TXERROR:") {
+					return strA.substr(6);
+				}
+	
+				return strA;
+			}
+	
+			function getConfirm(titelA, msgA) {
+				var result = view.msgbox { 
+					type:#question,
+					title: titelA,
+					content: msgA, 
+					//buttons:[#yes,#no]
+					buttons: [
+						{id:#yes,text:"Ok",role:"default-button"},
+						{id:#cancel,text:"Cancel",role:"cancel-button"}]                               
+					};
+	
+				return result;
+			}
+	
+			function showInfo(titelA, msgA) {
+				var result = view.msgbox { 
+					type:#information,
+					title: titelA,
+					content: msgA, 
+					//buttons:[#yes,#no]
+					buttons: [
+						{id:#cancel,text:"Close",role:"cancel-button"}]                               
+					};
+	
+				return result;
+			}
+	
+			function showError(titelA, msgA) {
+				var result = view.msgbox { 
+					type:#alert,
+					title: titelA,
+					content: msgA, 
+					//buttons:[#yes,#no]
+					buttons: [
+						{id:#cancel,text:"Close",role:"cancel-button"}]                               
+					};
+	
+				return result;
+			}
+	
+			function getScreenWH() {
+	//			view.prints(String.printf("screenBoxO: %v, %v", 1, 2));
+				var (w, h) = view.screenBox(#frame, #dimension)
+	//			view.prints(String.printf("screenBox: %v, %v", w, h));
+	
+				view.move((w-800)/2, (h-600)/2, 800, 600);
+	
+				return String.printf("%v|%v", w, h);
+			}
+	
+			var editFileNameG = "";
+			var editFileCleanFlagG = "";
+	
+			function updateFileName() {
+				$(#fileNameLabelID).html = (editFileNameG + editFileCleanFlagG);
+			}
+	
+			function selectFileJS() {
+				//var fn = view.selectFile(#open, "Gotx Files (*.gt,*.go)|*.gt;*.go|All Files (*.*)|*.*" , "gotx" );
+				var fn = view.selectFile(#open);
+				view.prints(String.printf("fn: %v", fn));
+				//view.prints(String.printf("screenBox: %v", view.screenBox(#frame, #dimension)));
+	
+				if (fn == undefined) {
+					return;
+				}
+	
+				var fileNameT = URL.toPath(fn);
+	
+				var rs = view.loadStringFromFile(fileNameT);
+	
+				if (isErrStr(rs)) {
+					showError("Error", String.printf("Failed to load file content: %v", getErrStr(rs)));
+					return;
+				}
+	
+				$(plaintext).attributes["type"] = "text/script";
+	
+				$(plaintext).value = rs;
+	
+				editFileNameG = fileNameT;
+	
+				editFileCleanFlagG = "";
+	
+				updateFileName();
+	
+				// return fn;
+			}
+	
+			function editFileLoadClick() {
+				if (editFileCleanFlagG != "") {
+				
+					var rs = getConfirm("Please confirm", "File modified, load another file anyway?");
+	
+					if (rs != #yes) {
+						return;
+					}
+	
+				}
+	
+				selectFileJS();
+			}
+	
+			function editFileSaveAsClick() {
+				var fn = view.selectFile(#save);
+				view.prints(String.printf("fn: %v", fn));
+	
+				if (fn == undefined) {
+					return;
+				}
+	
+				var fileNameT = URL.toPath(fn);
+	
+				var textT = $(plaintext).value;
+	
+				var rs = view.saveStringToFile(textT, fileNameT);
+	
+				if (isErrStr(rs)) {
+					showError("Error", String.printf("Failed to save file content: %v", getErrStr(rs)));
+					return;
+				}
+	
+				editFileNameG = fileNameT;
+				editFileCleanFlagG = "";
+				updateFileName();
+	
+				showInfo("Info", "Saved.");
+	
+			}
+	
+			function editFileSaveClick() {
+				if (editFileNameG == "") {
+					editFileSaveAsClick();
+	
+					return;
+				}
+	
+				var textT = $(plaintext).value;
+	
+				var rs = view.saveStringToFile(textT, editFileNameG);
+	
+				if (isErrStr(rs)) {
+					showError("Error", String.printf("Failed to save file content: %v", getErrStr(rs)));
+					return;
+				}
+	
+				editFileCleanFlagG = "";
+				updateFileName();
+	
+				showInfo("Info", "Saved.");
+			}
+	
+			function editRunClick() {
+				view.close();
+				// view.exit();
+			}
+	
+			function getInput(msgA) {
+				var res = view.dialog({ 
+					html: ` + "`+\"`\"+`" + `
+					<html>
+					<body>
+					  <center>
+						  <div style="margin-top: 10px; margin-bottom: 10px;">
+							  <span>` + "`+\"`\"+`" + `+msgA+` + "`+\"`\"+`" + `</span>
+						  </div>
+						  <div style="margin-top: 10px; margin-bottom: 10px;">
+							  <input id="mainTextID" type="text" />
+						  </div>
+						  <div style="margin-top: 10px; margin-bottom: 10px;">
+							  <input id="submitButtonID" type="button" value="Ok" />
+							  <input id="cancelButtonID" type="button" value="Cancel" />
+						  </div>
+					  </center>
+					  <script type="text/tiscript">
+						  $(#submitButtonID).onClick = function() {
+							  view.close($(#mainTextID).value);
+						  };
+	  
+						  $(#cancelButtonID).onClick = function() {
+							  view.close();
+						  };
+					  </scr` + "`+\"`\"+`" + `+` + "`+\"`\"+`" + `ipt>
+					</body>
+					</html>
+					` + "`+\"`\"+`" + `
+				  });
+	  
+				  return res;
+			  }
+	
+			event click $(#btnEncrypt)
+			{
+				  var res = getInput("Secure Code");
+	
+				if (res == undefined) {
+					return;
+				}
+	
+				var sourceT = $(plaintext).value;
+	
+				var encStrT = view.encryptText(sourceT, res);
+			
+				if (isErrStr(encStrT)) {
+					showError("Error", String.printf("failed to encrypt content: %v",getErrStr(encStrT)));
+					return;
+				}
+			
+				$(plaintext).value = "\/\/TXDEF#" + encStrT;
+				editFileCleanFlagG = "*";
+			}
+		
+			event click $(#btnDecrypt)
+			{
+				  var res = getInput("Secure Code");
+	
+				if (res == undefined) {
+					return;
+				}
+	
+				var sourceT = $(plaintext).value;
+	
+				var encStrT = view.decryptText(sourceT, res);
+			
+				if (isErrStr(encStrT)) {
+					showError("Error", String.printf("failed to decrypt content: %v",getErrStr(encStrT)));
+					return;
+				}
+			
+				$(plaintext).value = encStrT;
+				editFileCleanFlagG = "*";
+			}
+		
+			event click $(#btnRun)
+			{
+				var res = getInput("Arguments to pass to script")
+	
+				if (res == undefined) {
+					return;
+				}
+	
+				var rs = view.runScript($(plaintext).value, res);
+	
+				showInfo("Result", rs)
+			 
+				  // view.prints(String.printf("result = %v", rs));
+			}
+		
+	
+			function editCloseClick() {
+				view.close();
+				// view.exit();
+			}
+	
+			function editFile(fileNameA) {
+				var fcT string;
+	
+				//view.prints("fileNameA: "+fileNameA);
+	
+				if (fileNameA == "") {
+					editFileNameG = "";
+	
+					fcT = "";
+	
+					editFileCleanFlagG = "*";
+				} else {
+					editFileNameG = fileNameA;
+	
+					fcT = view.loadStringFromFile(fileNameA);
+	
+	//		if tk.IsErrorString(fcT) {
+	//			tk.Pl("failed to load file %v: %v", editFileNameG, tk.GetErrorString(fcT))
+	//			return
+	
+	//		}
+	
+					editFileCleanFlagG = "";
+				}
+	
+				//view.prints(fcT);
+	
+				$(plaintext).attributes["type"] = "text/script";
+	
+				$(plaintext).value = fcT;
+	
+				updateFileName();
+	
+			}
+	
+			function self.ready() {
+	
+				//$(plaintext).value = "<html>\n<body>\n<span>abc</span>\n</body></html>";
+	
+				$(#btnLoad).onClick = editFileLoadClick;
+				$(#btnSave).onClick = editFileSaveClick;
+				$(#btnSaveAs).onClick = editFileSaveAsClick;
+				// $(#btnEncrypt).onClick = editFEncryptClick;
+				// $(#btnDecrypt).onClick = editDecryptClick;
+				// $(#btnRun).onClick = editRunClick;
+				$(#btnClose).onClick = editCloseClick;
+	
+				$(plaintext#source).onControlEvent = function(evt) {
+					switch (evt.type) {
+						case Event.EDIT_VALUE_CHANGED:      
+							editFileCleanFlagG = "*";
+							updateFileName();
+							return true;
+					}
+				};
+	
+			}
+		</script>
+	
+	</head>
+	<body>
+		<div style="margin-top: 10px; margin-bottom: 10px;"><span id="fileNameLabelID"></span></div>
+		<div style="margin-top: 10px; margin-bottom: 10px;">
+			<button id="btn1" style="display: none">Load...</button>
+			<button id="btnLoad">Load</button>
+			<button id="btnSave">Save</button>
+			<button id="btnSaveAs">SaveAs</button>
+			<button id="btnEncrypt">Encrypt</button>
+			<button id="btnDecrypt">Decrypt</button>
+			<button id="btnRun">Run</button>
+			<button id="btnClose">Close</button>
+		</div>
+		<plaintext#source type="text/html" style="font-size: 1.2em;"></plaintext>
+	
+	</body>
+	</html>
+	` + "`" + `
+
+	// htmlT = tk.LoadStringFromFile(tk.JoinPath(path_filepath.Dir(scriptPathG), "editFileSciter.st"))
+
+	// tk.CheckErrorString(htmlT)
+
+	runtime.LockOSThread()
+
+	w, err := window.New(sciter.DefaultWindowCreateFlag, sciter.DefaultRect)
+
+	checkError(err)
+
+	w.SetOption(sciter.SCITER_SET_SCRIPT_RUNTIME_FEATURES, sciter.ALLOW_FILE_IO|sciter.ALLOW_SOCKET_IO|sciter.ALLOW_EVAL|sciter.ALLOW_SYSINFO)
+
+	w.LoadHtml(htmlT, "")
+
+	w.SetTitle("Gox Editor")
+
+	w.DefineFunction("prints", func(args ...*sciter.Value) *sciter.Value {
+		tk.Pl("%v", args[0].String())
+		return sciter.NewValue("")
+	})
+
+	w.DefineFunction("loadStringFromFile", func(args ...*sciter.Value) *sciter.Value {
+		rs := tk.LoadStringFromFile(args[0].String())
+		return sciter.NewValue(rs)
+	})
+
+	w.DefineFunction("saveStringToFile", func(args ...*sciter.Value) *sciter.Value {
+		rs := tk.SaveStringToFile(args[0].String(), args[1].String())
+		return sciter.NewValue(rs)
+	})
+
+	w.DefineFunction("encryptText", func(args ...*sciter.Value) *sciter.Value {
+		rs := tk.EncryptStringByTXDEF(args[0].String(), args[1].String())
+		return sciter.NewValue(rs)
+	})
+
+	w.DefineFunction("decryptText", func(args ...*sciter.Value) *sciter.Value {
+		rs := tk.DecryptStringByTXDEF(args[0].String(), args[1].String())
+		return sciter.NewValue(rs)
+	})
+
+	w.DefineFunction("runScript", func(args ...*sciter.Value) *sciter.Value {
+		rs := runScript(args[0].String(), "", args[1].String())
+		return sciter.NewValue(tk.Spr("%v", rs))
+	})
+
+	w.DefineFunction("exit", func(args ...*sciter.Value) *sciter.Value {
+		os.Exit(1)
+	})
+
+	data, _ := w.Call("getScreenWH") //, sciter.NewValue(10), sciter.NewValue(20))
+	// fmt.Println("data:", data.String())
+
+	fileNameT := tk.GetParameterByIndexWithDefaultValue(os.Args, 1, "")
+
+	w.Call("editFile", sciter.NewValue(fileNameT))
+
+	w.Show()
+
+	w.Run()
+
+}
+
+`
+
+func editFile(fileNameA string, argsA ...string) {
+	runScriptX(editFileScriptG, argsA...)
+
+	// if rs != notFoundG {
+	// 	// tk.Pl("%v", rs)
+	// }
+
+}
+
 func main() {
 	// var errT error
 	defer func() {
@@ -1000,13 +1649,21 @@ func main() {
 
 	// full version related start
 	if tk.IfSwitchExistsWhole(argsT, "-edit") {
-		if lenT < 1 {
-			editFile("")
-		} else {
-			editFile(scriptsT[0])
-		}
+		runScriptX(editFileScriptG, os.Args[1:]...)
+
+		// if rs != notFoundG && rs != nil {
+		// 	tk.Pl("%v", rs)
+		// }
 
 		return
+
+		// if lenT < 1 {
+		// 	editFile("")
+		// } else {
+		// 	editFile(scriptsT[0])
+		// }
+
+		// return
 	}
 	// full version related end
 

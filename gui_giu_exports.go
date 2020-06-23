@@ -1,9 +1,119 @@
+// +build windows
+
 package main
 
 import (
-	"github.com/AllenDang/giu"
 	"reflect"
+
+	"github.com/AllenDang/giu"
+	"github.com/AllenDang/giu/imgui"
+	"github.com/sqweek/dialog"
+	"github.com/topxeq/tk"
 )
+
+func loadFont() {
+	fonts := giu.Context.IO().Fonts()
+
+	rangeVarT := tk.GetVar("FontRange")
+
+	ranges := imgui.NewGlyphRanges()
+
+	builder := imgui.NewFontGlyphRangesBuilder()
+
+	if rangeVarT == nil {
+		builder.AddRanges(fonts.GlyphRangesDefault())
+	} else {
+		rangeStrT := rangeVarT.(string)
+		if rangeStrT == "" {
+			builder.AddRanges(fonts.GlyphRangesChineseSimplifiedCommon())
+			builder.AddText(specialCharsG)
+		} else if tk.StartsWith(rangeStrT, "COMMON") {
+			builder.AddRanges(fonts.GlyphRangesChineseSimplifiedCommon())
+			builder.AddText(specialCharsG + rangeStrT[6:])
+		} else if rangeStrT == "FULL" {
+			builder.AddRanges(fonts.GlyphRangesChineseFull())
+			builder.AddText(specialCharsG)
+		} else {
+			builder.AddText(rangeStrT)
+		}
+	}
+
+	builder.BuildRanges(ranges)
+
+	fontPath := "c:/Windows/Fonts/simhei.ttf"
+
+	if tk.Contains(tk.GetOSName(), "rwin") {
+		fontPath = "/Library/Fonts/Microsoft/SimHei.ttf"
+	}
+
+	fontVarT := tk.GetVar("Font") // "c:/Windows/Fonts/simsun.ttc"
+
+	if fontVarT != nil {
+		fontPath = fontVarT.(string)
+	}
+
+	fontSizeStrT := "16"
+
+	fontSizeVarT := tk.GetVar("FontSize")
+
+	if fontSizeVarT != nil {
+		fontSizeStrT = fontSizeVarT.(string)
+	}
+
+	fontSizeT := tk.StrToIntWithDefaultValue(fontSizeStrT, 16)
+
+	// fonts.AddFontFromFileTTF(fontPath, 14)
+	fonts.AddFontFromFileTTFV(fontPath, float32(fontSizeT), imgui.DefaultFontConfig, ranges.Data())
+}
+
+// var vgInch = float64(vg.Inch)
+
+func getConfirmGUI(titleA string, messageA string) bool {
+	return dialog.Message("%v", messageA).Title(titleA).YesNo()
+}
+
+func simpleInfo(titleA string, messageA string) {
+	dialog.Message("%v", messageA).Title(titleA).Info()
+}
+
+func simpleError(titleA string, messageA string) {
+	dialog.Message("%v", messageA).Title(titleA).Error()
+}
+
+// filename, err := dialog.File().Filter("XML files", "xml").Title("Export to XML").Save()
+func selectFileToSaveGUI(titleA string, filterNameA string, filterTypeA string) string {
+	fileNameT, errT := dialog.File().Filter(filterNameA, filterTypeA).Title(titleA).Save()
+
+	if errT != nil {
+		return tk.GenerateErrorStringF("failed: %v", errT)
+	}
+
+	return fileNameT
+}
+
+// fileNameT, errT := dialog.File().Filter("Mp3 audio file", "mp3").Load()
+func selectFileGUI(titleA string, filterNameA string, filterTypeA string) string {
+	fileNameT, errT := dialog.File().Filter(filterNameA, filterTypeA).Title(titleA).Load()
+
+	if errT != nil {
+		return tk.GenerateErrorStringF("failed: %v", errT)
+	}
+
+	return fileNameT
+}
+
+// directory, err := dialog.Directory().Title("Load images").Browse()
+func selectDirectoryGUI(titleA string) string {
+	directoryT, errT := dialog.Directory().Title(titleA).Browse()
+
+	if errT != nil {
+		return tk.GenerateErrorStringF("failed: %v", errT)
+	}
+
+	return directoryT
+}
+
+var specialCharsG = "ɪɔː辑ˌɡɜɔŋæʌʃɛəʒɪɑɒθʊː"
 
 func init() {
 	GotxSymbols["github.com/AllenDang/giu"] = map[string]reflect.Value{
@@ -83,8 +193,8 @@ func init() {
 		"SelectSaveFile":  reflect.ValueOf(selectFileToSaveGUI),
 		"SelectDirectory": reflect.ValueOf(selectDirectoryGUI),
 
-		"EditFile":   reflect.ValueOf(editFile),
-		"LoopWindow": reflect.ValueOf(loopWindow),
+		"EditFile": reflect.ValueOf(editFile),
+		// "LoopWindow": reflect.ValueOf(loopWindow),
 
 		"LayoutP": reflect.ValueOf(giu.Layout{}),
 
