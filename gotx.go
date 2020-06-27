@@ -57,7 +57,7 @@ import (
 
 // Non GUI related
 
-var versionG = "0.997a"
+var versionG = "0.999a"
 
 var verboseG = false
 
@@ -83,6 +83,7 @@ func ygEval(strA string) string {
 		"pl":               reflect.ValueOf(tk.Pl),
 		"pln":              reflect.ValueOf(fmt.Println),
 		"plv":              reflect.ValueOf(tk.Plv),
+		"plvsr":            reflect.ValueOf(tk.Plvsr),
 		"plerr":            reflect.ValueOf(tk.PlErr),
 		"exit":             reflect.ValueOf(tk.Exit),
 		"setValue":         reflect.ValueOf(tk.SetValue),
@@ -153,6 +154,7 @@ func runScript(codeA string, modeA string, argsA ...string) interface{} {
 			"pl":               reflect.ValueOf(tk.Pl),
 			"pln":              reflect.ValueOf(fmt.Println),
 			"plv":              reflect.ValueOf(tk.Plv),
+			"plvsr":            reflect.ValueOf(tk.Plvsr),
 			"plerr":            reflect.ValueOf(tk.PlErr),
 			"exit":             reflect.ValueOf(tk.Exit),
 			"setValue":         reflect.ValueOf(tk.SetValue),
@@ -739,6 +741,7 @@ func initYGVM() {
 			"pl":               reflect.ValueOf(tk.Pl),
 			"pln":              reflect.ValueOf(fmt.Println),
 			"plv":              reflect.ValueOf(tk.Plv),
+			"plvsr":            reflect.ValueOf(tk.Plvsr),
 			"plerr":            reflect.ValueOf(tk.PlErr),
 			"exit":             reflect.ValueOf(tk.Exit),
 			"setValue":         reflect.ValueOf(tk.SetValue),

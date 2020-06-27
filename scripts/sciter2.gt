@@ -1,0 +1,92 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"runtime"
+
+	"github.com/sciter-sdk/go-sciter"
+	"github.com/sciter-sdk/go-sciter/window"
+)
+
+func main() {
+	// htmlT中将是在Sciter界面中载入的HTML页面文本
+	// 其中self.ready()函数类似JQuery中的$(document).ready函数
+	// 在其中定义了按钮2点击后的回调函数，调用了Gotx语言中定义的prints函数
+	htmlT := `
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Sciter演示</title>
+	<script type="text/tiscript">
+		function self.ready() {
+			$(#btn2).onClick = function() {
+				view.prints(String.printf("按钮2被点击了: %s", new Date()));
+
+				stdout.println("1 + 2 = ", 1+2);
+
+				var result = 1.61 / 2.23;
+
+				debug info ( result = {result});
+				debug alert ( this is a warning {2*5});
+
+				this.html = "已点击";
+			};
+		}
+	</script>
+</head>
+<body>
+    <button id="btn1">按钮1</button>
+    <button id="btn2">按钮2</button>
+    <button id="btn3">按钮3</button>
+</body>
+</html>
+`
+
+	// 锁死GUI线程，理论上所有图形界面操作应该在一个线程中进行
+	runtime.LockOSThread()
+
+	// 创建Sciter对象，并设置大小位置为默认
+	w, err := window.New(sciter.DefaultWindowCreateFlag, sciter.DefaultRect)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 载入HTML文本
+	w.LoadHtml(htmlT, "")
+
+	// 设置图形窗口标题
+	w.SetTitle("Sciter演示")
+
+	// 设定一个Go语言函数供TiScript中调用
+	// 注意输入输出参数的转换方式
+	w.DefineFunction("prints", func(args ...*sciter.Value) *sciter.Value {
+		fmt.Println(args[0].String())
+
+		return sciter.NewValue("")
+	})
+
+	// 选择界面中的根元素
+	root, _ := w.GetRootElement()
+
+	// 选取id为btn1的元素，即按钮1
+	btn1, _ := root.SelectById("btn1")
+
+	// 设置按钮1点击后的Go语言回调函数
+	btn1.OnClick(func() {
+		fmt.Println("btn1被点击了")
+
+		btn1.SetStyle("color", "#FF0000")
+
+		fmt.Println(btn1.Html(true))
+		btn1.SetHtml("已点击", sciter.SIH_REPLACE_CONTENT)
+
+	})
+
+	// 显示Sciter图形界面并开始运行之
+	w.Show()
+	w.Run()
+
+}
