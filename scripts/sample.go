@@ -2,17 +2,36 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"strconv"
 )
+
+func strToInt(strA string, defaultA int) int {
+	n, err := strconv.ParseInt(strA, 10, 0)
+	if err != nil {
+		return defaultA
+	}
+
+	return int(n)
+}
+
+func StrToIntWithDefaultValue(strA string, defaultA int) int {
+	nT, errT := strconv.ParseInt(strA, 10, 0)
+	if errT != nil {
+		return defaultA
+	}
+
+	return int(nT)
+}
+
+var r = 19
 
 func main() {
 
-	fn1 := func(args ...*time.Duration) string {
-		rs := fmt.Sprintf("%v", args[0])
+	a := strToInt("30", -1)
+	fmt.Printf("%#v\n", a)
 
-		return rs
-	}
+	r := StrToIntWithDefaultValue("40", r)
 
-	fmt.Printf("%#v\n", fn1)
+	fmt.Println(r)
 
 }
