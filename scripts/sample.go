@@ -1,37 +1,15 @@
 package main
 
-import (
-	"fmt"
-	"strconv"
-)
+var optionsG map[string]string = nil
 
-func strToInt(strA string, defaultA int) int {
-	n, err := strconv.ParseInt(strA, 10, 0)
-	if err != nil {
-		return defaultA
-	}
-
-	return int(n)
-}
-
-func StrToIntWithDefaultValue(strA string, defaultA int) int {
-	nT, errT := strconv.ParseInt(strA, 10, 0)
-	if errT != nil {
-		return defaultA
-	}
-
-	return int(nT)
-}
-
-var r = 19
+var roundG = 30
 
 func main() {
 
-	a := strToInt("30", -1)
-	fmt.Printf("%#v\n", a)
+	dummy := roundG
 
-	r := StrToIntWithDefaultValue("40", r)
+	roundG = dummy + 1
+	println(roundG)
 
-	fmt.Println(r)
-
+	println(optionsG)
 }
