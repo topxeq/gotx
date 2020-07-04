@@ -33,20 +33,26 @@ func main() {
 
 	fcNewT := tk.RegReplace(fcT, `(?m)// GUI related start[\s\S]*?// GUI related end`, "")
 
-	destPathT := tk.JoinPath(gopathT, "/src/gotxc")
+	destPathT := tk.JoinPath(gopathT, "/src/github.com/topxeq/gotxc")
 
-	errT := os.RemoveAll(destPathT)
-
-	if errT != nil {
-		tk.Pl("failed to remove path: %v")
-		return
-	}
-
-	tk.Pl("remove path %v: %v", destPathT, errT)
+	// errT := os.RemoveAll(destPathT)
 
 	tk.EnsureMakeDirs(destPathT)
 
-	newFilePathT := tk.JoinPath(gopathT, "/src/gotxc/gotxc.go")
+	aryRemoveT := tk.GenerateFileListInDir(destPathT, "*.go", true)
+	// pl("%#v", aryT)
+
+	for _, v := range aryRemoveT {
+
+		errT := os.Remove(v)
+
+		if errT != nil {
+			tk.Pl("failed to remove file: %v")
+			os.Exit(1)
+		}
+	}
+
+	newFilePathT := tk.JoinPath(gopathT, "/src/github.com/topxeq/gotxc/gotxc.go")
 
 	rsT := tk.SaveStringToFile(fcNewT, newFilePathT)
 
