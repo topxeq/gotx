@@ -4,7 +4,8 @@ import (
 	. "builtin"
 	"os"
 	"path/filepath"
-	"tk"
+
+	"github.com/topxeq/tk"
 )
 
 func main() {

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"strings"
 
 	"io"
 	"math/rand"
@@ -17,8 +18,8 @@ import (
 
 	// "runtime"
 
-	"github.com/containous/yaegi/interp"
-	"github.com/containous/yaegi/stdlib"
+	"github.com/traefik/yaegi/interp"
+	"github.com/traefik/yaegi/stdlib"
 
 	_ "github.com/denisenkom/go-mssqldb"
 	// "github.com/badgraph-io/badger"
@@ -57,7 +58,7 @@ import (
 
 // Non GUI related
 
-var versionG = "0.999a"
+var versionG = "1.01a"
 
 var verboseG = false
 
@@ -76,33 +77,7 @@ func ygEval(strA string) string {
 
 	vmT.Use(stdlib.Symbols)
 
-	GotxSymbols["builtin"] = map[string]reflect.Value{
-		"eval":             reflect.ValueOf(ygEval),
-		"printfln":         reflect.ValueOf(tk.Pl),
-		"fprintf":          reflect.ValueOf(fmt.Fprintf),
-		"pl":               reflect.ValueOf(tk.Pl),
-		"pln":              reflect.ValueOf(fmt.Println),
-		"plv":              reflect.ValueOf(tk.Plv),
-		"plvsr":            reflect.ValueOf(tk.Plvsr),
-		"plerr":            reflect.ValueOf(tk.PlErr),
-		"exit":             reflect.ValueOf(tk.Exit),
-		"setValue":         reflect.ValueOf(tk.SetValue),
-		"getValue":         reflect.ValueOf(tk.GetValue),
-		"bitXor":           reflect.ValueOf(tk.BitXor),
-		"setVar":           reflect.ValueOf(tk.SetVar),
-		"getVar":           reflect.ValueOf(tk.GetVar),
-		"checkError":       reflect.ValueOf(tk.CheckError),
-		"checkErrorString": reflect.ValueOf(tk.CheckErrorString),
-		"getInput":         reflect.ValueOf(tk.GetUserInput),
-		"getInputf":        reflect.ValueOf(tk.GetInputf),
-		"run":              reflect.ValueOf(runFile),
-		"typeOf":           reflect.ValueOf(tk.TypeOfValue),
-		"typeOfReflect":    reflect.ValueOf(tk.TypeOfValueReflect),
-		"remove":           reflect.ValueOf(tk.RemoveItemsInArray),
-		"runScript":        reflect.ValueOf(runScript),
-		"getClipText":      reflect.ValueOf(tk.GetClipText),
-		"setClipText":      reflect.ValueOf(tk.SetClipText),
-	}
+	setBuiltinFuncs()
 
 	vmT.Use(GotxSymbols)
 
@@ -141,39 +116,81 @@ func runScriptX(codeA string, argsA ...string) interface{} {
 	return errT
 }
 
+func setBuiltinFuncs() {
+	GotxSymbols["builtin"] = map[string]reflect.Value{
+		"eval":             reflect.ValueOf(ygEval),
+		"printfln":         reflect.ValueOf(tk.Pl),
+		"fprintf":          reflect.ValueOf(fmt.Fprintf),
+		"pl":               reflect.ValueOf(tk.Pl),
+		"pln":              reflect.ValueOf(fmt.Println),
+		"plv":              reflect.ValueOf(tk.Plv),
+		"plvsr":            reflect.ValueOf(tk.Plvsr),
+		"plerr":            reflect.ValueOf(tk.PlErr),
+		"exit":             reflect.ValueOf(tk.Exit),
+		"setValue":         reflect.ValueOf(tk.SetValue),
+		"getValue":         reflect.ValueOf(tk.GetValue),
+		"bitXor":           reflect.ValueOf(tk.BitXor),
+		"setVar":           reflect.ValueOf(tk.SetVar),
+		"getVar":           reflect.ValueOf(tk.GetVar),
+		"checkError":       reflect.ValueOf(tk.CheckError),
+		"checkErrorString": reflect.ValueOf(tk.CheckErrorString),
+		"checkErrf":        reflect.ValueOf(tk.CheckErrf),
+		"checkErrStrf":     reflect.ValueOf(tk.CheckErrStrf),
+		"fatalf":           reflect.ValueOf(tk.Fatalf),
+		"isErrStr":         reflect.ValueOf(tk.IsErrStr),
+		"errStr":           reflect.ValueOf(tk.ErrStr),
+		"errStrf":          reflect.ValueOf(tk.ErrStrF),
+		"getErrStr":        reflect.ValueOf(tk.GetErrStr),
+		"errf":             reflect.ValueOf(tk.Errf),
+		"getInput":         reflect.ValueOf(tk.GetUserInput),
+		"getInputf":        reflect.ValueOf(tk.GetInputf),
+		"run":              reflect.ValueOf(runFile),
+		"typeOf":           reflect.ValueOf(tk.TypeOfValue),
+		"typeOfReflect":    reflect.ValueOf(tk.TypeOfValueReflect),
+		"remove":           reflect.ValueOf(tk.RemoveItemsInArray),
+		"runScript":        reflect.ValueOf(runScript),
+		"getClipText":      reflect.ValueOf(tk.GetClipText),
+		"setClipText":      reflect.ValueOf(tk.SetClipText),
+		"isNil":            reflect.ValueOf(tk.IsNil),
+		"isError":          reflect.ValueOf(tk.IsError),
+		"strToInt":         reflect.ValueOf(tk.StrToIntWithDefaultValue),
+		"intToStr":         reflect.ValueOf(tk.IntToStr),
+		"floatToStr":       reflect.ValueOf(tk.Float64ToStr),
+		"toStr":            reflect.ValueOf(tk.ToStr),
+		"toInt":            reflect.ValueOf(tk.ToInt),
+		"toFloat":          reflect.ValueOf(tk.ToFloat),
+		"toLower":          reflect.ValueOf(strings.ToLower),
+		"toUpper":          reflect.ValueOf(strings.ToUpper),
+		"trim":             reflect.ValueOf(tk.Trim),
+		"getParameter":     reflect.ValueOf(tk.GetParameterByIndexWithDefaultValue),
+		"getSwitch":        reflect.ValueOf(tk.GetSwitchWithDefaultValue),
+		"getIntSwitch":     reflect.ValueOf(tk.GetSwitchWithDefaultIntValue),
+		"switchExists":     reflect.ValueOf(tk.IfSwitchExistsWhole),
+		"ifSwitchExists":   reflect.ValueOf(tk.IfSwitchExistsWhole),
+		"xmlEncode":        reflect.ValueOf(tk.EncodeToXMLString),
+		"htmlEncode":       reflect.ValueOf(tk.EncodeHTML),
+		"htmlDecode":       reflect.ValueOf(tk.DecodeHTML),
+		"base64Encode":     reflect.ValueOf(tk.EncodeToBase64),
+		"base64Decode":     reflect.ValueOf(tk.DecodeFromBase64),
+		"md5Encode":        reflect.ValueOf(tk.MD5Encrypt),
+		"jsonEncode":       reflect.ValueOf(tk.ObjectToJSON),
+		"jsonDecode":       reflect.ValueOf(tk.JSONToObject),
+		"simpleEncode":     reflect.ValueOf(tk.EncodeStringCustomEx),
+		"simpleDecode":     reflect.ValueOf(tk.DecodeStringCustom),
+
+		"argsG":    reflect.ValueOf(argsG),
+		"versionG": reflect.ValueOf(versionG),
+	}
+
+}
+
 func runScript(codeA string, modeA string, argsA ...string) interface{} {
 	if modeA == "" || modeA == "0" || modeA == "yg" {
 		vmT := interp.New(interp.Options{})
 
 		vmT.Use(stdlib.Symbols)
 
-		GotxSymbols["builtin"] = map[string]reflect.Value{
-			"eval":             reflect.ValueOf(ygEval),
-			"printfln":         reflect.ValueOf(tk.Pl),
-			"fprintf":          reflect.ValueOf(fmt.Fprintf),
-			"pl":               reflect.ValueOf(tk.Pl),
-			"pln":              reflect.ValueOf(fmt.Println),
-			"plv":              reflect.ValueOf(tk.Plv),
-			"plvsr":            reflect.ValueOf(tk.Plvsr),
-			"plerr":            reflect.ValueOf(tk.PlErr),
-			"exit":             reflect.ValueOf(tk.Exit),
-			"setValue":         reflect.ValueOf(tk.SetValue),
-			"getValue":         reflect.ValueOf(tk.GetValue),
-			"bitXor":           reflect.ValueOf(tk.BitXor),
-			"setVar":           reflect.ValueOf(tk.SetVar),
-			"getVar":           reflect.ValueOf(tk.GetVar),
-			"checkError":       reflect.ValueOf(tk.CheckError),
-			"checkErrorString": reflect.ValueOf(tk.CheckErrorString),
-			"getInput":         reflect.ValueOf(tk.GetUserInput),
-			"getInputf":        reflect.ValueOf(tk.GetInputf),
-			"run":              reflect.ValueOf(runFile),
-			"typeOf":           reflect.ValueOf(tk.TypeOfValue),
-			"typeOfReflect":    reflect.ValueOf(tk.TypeOfValueReflect),
-			"remove":           reflect.ValueOf(tk.RemoveItemsInArray),
-			"runScript":        reflect.ValueOf(runScript),
-			"getClipText":      reflect.ValueOf(tk.GetClipText),
-			"setClipText":      reflect.ValueOf(tk.SetClipText),
-		}
+		setBuiltinFuncs()
 
 		vmT.Use(GotxSymbols)
 
@@ -734,34 +751,7 @@ func initYGVM() {
 
 		ygVMG.Use(stdlib.Symbols)
 
-		GotxSymbols["builtin"] = map[string]reflect.Value{
-			"eval":             reflect.ValueOf(ygEval),
-			"printfln":         reflect.ValueOf(tk.Pl),
-			"fprintf":          reflect.ValueOf(fmt.Fprintf),
-			"pl":               reflect.ValueOf(tk.Pl),
-			"pln":              reflect.ValueOf(fmt.Println),
-			"plv":              reflect.ValueOf(tk.Plv),
-			"plvsr":            reflect.ValueOf(tk.Plvsr),
-			"plerr":            reflect.ValueOf(tk.PlErr),
-			"exit":             reflect.ValueOf(tk.Exit),
-			"setValue":         reflect.ValueOf(tk.SetValue),
-			"getValue":         reflect.ValueOf(tk.GetValue),
-			"bitXor":           reflect.ValueOf(tk.BitXor),
-			"setVar":           reflect.ValueOf(tk.SetVar),
-			"getVar":           reflect.ValueOf(tk.GetVar),
-			"checkError":       reflect.ValueOf(tk.CheckError),
-			"checkErrorString": reflect.ValueOf(tk.CheckErrorString),
-			"getInput":         reflect.ValueOf(tk.GetUserInput),
-			"getInputf":        reflect.ValueOf(tk.GetInputf),
-			"run":              reflect.ValueOf(runFile),
-			"typeOf":           reflect.ValueOf(tk.TypeOfValue),
-			"typeOfReflect":    reflect.ValueOf(tk.TypeOfValueReflect),
-			"remove":           reflect.ValueOf(tk.RemoveItemsInArray),
-			"runScript":        reflect.ValueOf(runScript),
-			"getClipText":      reflect.ValueOf(tk.GetClipText),
-			"setClipText":      reflect.ValueOf(tk.SetClipText),
-			"argsG":            reflect.ValueOf(argsG),
-		}
+		setBuiltinFuncs()
 
 		ygVMG.Use(GotxSymbols)
 

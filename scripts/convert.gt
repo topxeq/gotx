@@ -1,0 +1,39 @@
+package main
+
+import "github.com/topxeq/tk"
+
+// convert Gotx file to Go source file.
+func main() {
+	fileT := trim(getSwitch(argsG, "-file=", ""))
+
+	if fileT == "" {
+		pl("not enough parameters")
+		exit()
+	}
+
+	fcT := tk.LoadStringFromFile(fileT)
+
+	if isErrStr(fcT) {
+		pl("failed to load file content: %v", getErrStr(fcT))
+		exit()
+	}
+
+	contentT := tk.RegReplaceX(fcT, `(\s+)(pl\()`, "${1}tk.Pl(")
+	contentT := tk.RegReplaceX(fcT, `(\s+)(plvsr\()`, "${1}tk.Plvsr(")
+	contentT = tk.RegReplaceX(contentT, `((\s+)|(\())(isErrStr\()`, "${1}tk.IsErrStr(")
+	contentT = tk.RegReplaceX(contentT, `((\s+)|(\())(getSwitch\()`, "${1}tk.GetSwitchWithDefaultValue(")
+	contentT = tk.RegReplaceX(contentT, `((\s+)|(\())(getIntSwitch\()`, "${1}tk.GetIntSwitchWithDefaultValue(")
+	contentT = tk.RegReplaceX(contentT, `((\s+)|(\())(trim\()`, "${1}tk.Trim(")
+	contentT = tk.RegReplaceX(contentT, `((\s+)|(\())(getErrStr\()`, "${1}tk.GetErrStr(")
+	contentT = tk.RegReplaceX(contentT, `(\s+)(exit\()`, "${1}tk.Exit(")
+	contentT = tk.RegReplaceX(contentT, `argsG`, "tk.GetOSArgsShort()")
+
+	rs := tk.SaveStringToFile(contentT, fileT+".go")
+
+	if isErrStr(rs) {
+		pl("failed to save file content: %v", getErrStr(rs))
+		exit()
+	}
+
+	pl("Done.")
+}
